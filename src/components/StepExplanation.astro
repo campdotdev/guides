@@ -1,5 +1,6 @@
 ---
 import type { Step } from '../guide/load.ts';
+import '../styles/inline-pointers.css';
 
 interface Props {
 	step: Step;
@@ -12,3 +13,9 @@ const id = `step-${step.number}-explanation`;
 	<h2 id={id}>Step {step.number}: {step.title}</h2>
 	<Fragment set:html={step.html} />
 </section>
+
+<script>
+	import { initInlinePointers } from '../client/inline-pointers.ts';
+
+	initInlinePointers();
+</script>
