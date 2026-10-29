@@ -35,6 +35,16 @@ const cases = [
 		error: /headSha: Expected a full 40-character lowercase commit SHA/,
 	},
 	{
+		guide: 'a title that is not a Conventional Commit',
+		dir: 'title-not-conventional',
+		error: /title: Expected a Conventional Commit, such as "feat\(shaders\): add FlutedGlass"/,
+	},
+	{
+		guide: 'a scope that is not the title’s scope',
+		dir: 'scope-not-in-title',
+		error: /scope: Expected "shaders", the scope in the title/,
+	},
+	{
 		guide: 'a block pointer whose range ends before it starts',
 		dir: 'backward-range',
 		error: /Invalid guide shaders\/264\.md: steps\.1\.pointers\.2: "#L39-L37" is not a line range/,

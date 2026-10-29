@@ -14,8 +14,8 @@ Markdown files at the top level of the branch, such as `README.md`, are not guid
 | --- | --- | --- | --- |
 | `repo` | string | Yes | The repository, as `owner/name`. The name is the folder the file sits in. |
 | `pr` | positive integer | Yes | The pull request number. The file's name is this number plus `.md`. |
-| `title` | string | Yes | The pull request title, which is a Conventional Commit. The page shows it as its heading. |
-| `scope` | string | No | The Conventional Commit scope of the title. The repo's page can filter its guides by scope. |
+| `title` | string | Yes | The pull request title, as a Conventional Commit: a lowercase type, an optional scope in parentheses, an optional `!`, a colon, a space, and a description, such as `feat(shaders): add FlutedGlass`. The page shows it as its heading. |
+| `scope` | string | When the title has a scope | The scope in the title, such as `shaders`. A `scope` that differs from the title's scope fails the build, and so does a `scope` on a title without one. The repo's page can filter its guides by scope. |
 | `baseSha` | commit SHA | Yes | The commit the pull request is based on. GitHub diffs `headSha` against the merge base of `baseSha` and `headSha`. The merge base is `baseSha` itself unless `baseSha` is a newer commit on the base branch than the one the pull request's branch started from. The page reads removed lines, deleted files, and "Before" images at the merge base. |
 | `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. When the pull request's head differs from it, the page shows a banner that names this commit and links to the pull request. |
 | `afterTheFact` | boolean | No | `true` when the guide was written from the diff after the session ended. The page then says it lacks the session's reasoning. Defaults to `false`. |
@@ -104,7 +104,7 @@ A pointer range that spans two of GitHub's hunks shows both hunks, with a separa
 
 ## New, deleted, and renamed files
 
-A block pointer into a file that the pull request adds, deletes, or renames works like any other block pointer, with these differences:
+A block pointer into a file that the pull request adds, deletes, renames, or copies works like any other block pointer, with these differences:
 
 | File | Line numbers | The page shows |
 | --- | --- | --- |
@@ -112,6 +112,7 @@ A block pointer into a file that the pull request adds, deletes, or renames work
 | Deleted | At the merge base, because the file has no lines at `headSha`. | Only removed lines. The file header says **Deleted file**. |
 | Renamed | At `headSha`. The pointer names the new path. | The diff. The file header shows the new path and says **Renamed from** the old path. |
 | Renamed without edits | At `headSha`. The pointer names the new path. | The pointer's rows as unchanged lines, because GitHub shows no diff for the file. The file header says **Renamed from** the old path. |
+| Copied | At `headSha`. The pointer names the copy's path. | The diff against the file it copies. The file header shows the copy's path and says **Copied from** the path it copies. |
 
 A pointer that names a renamed file's old path fails the build, because the pull request changes no file at that path.
 
@@ -123,7 +124,7 @@ A block pointer to an image file shows the image instead of a diff. It is a link
 [](apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png)
 ```
 
-An image file is a file whose name ends in `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`. The file must be one the pull request changes between `baseSha` and `headSha`. A line range on an image pointer fails the build.
+An image file is a file whose name ends in `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`, in any letter case, so `.PNG` counts too. The file must be one the pull request changes between `baseSha` and `headSha`. A line range on an image pointer fails the build.
 
 The page shows the image at the merge base under "Before" and the image at `headSha` under "After". It shows only the versions that exist:
 
