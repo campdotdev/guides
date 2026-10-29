@@ -56,6 +56,15 @@ test.describe('on a narrow viewport', () => {
 		expect(await scrollsSideways(page)).toBe(false);
 	});
 
+	test('the guide’s heading lines up with the steps below it', async ({ page }) => {
+		await page.goto(GUIDE);
+		const heading = page.getByRole('heading', { level: 1 });
+		const firstStep = page.getByRole('region', { name: 'Steps' }).getByRole('article').first();
+
+		const left = async (locator: Locator) => (await locator.boundingBox())?.x;
+		await expect.poll(() => left(heading)).toBe(await left(firstStep));
+	});
+
 	test('a selected step’s explanation sits between its header and its code', async ({ page }) => {
 		await page.goto(GUIDE);
 		const { block, header, explanation, code } = step2(page);

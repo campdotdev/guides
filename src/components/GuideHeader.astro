@@ -55,6 +55,13 @@ const trail = [
 		border-bottom: 1px solid var(--border);
 	}
 
+	/* The same width as the narrow layout in GuidePage.astro, whose panes have 16px of side padding. */
+	@media (width < 800px) {
+		.guide-header {
+			padding-inline: 16px;
+		}
+	}
+
 	h1 {
 		margin: 4px 0;
 		font-size: 1.6rem;
