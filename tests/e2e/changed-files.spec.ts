@@ -10,28 +10,31 @@ import { expect, test } from './test.ts';
 
 const GUIDE = '/guides/shaders/264/';
 
-/** #264's changed files that no block pointer in the fixture guide names, in GitHub's order, with their line counts. */
-const ALSO_CHANGED_264: [path: string, added: number, removed: number][] = [
-	['.changeset/fluted-glass.md', 16, 0],
-	['GLOSSARY.md', 18, 0],
-	['apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-darwin.png', 0, 0],
-	['apps/docs/public/posters/fluted-glass.jpg', 0, 0],
-	['apps/docs/public/posters/fluted-glass.thumb.webp', 0, 0],
-	['apps/docs/src/app/components/demo-registry.tsx', 18, 0],
-	['apps/docs/src/app/components/fluted-glass/demo.tsx', 90, 0],
-	['apps/docs/src/app/components/fluted-glass/params.ts', 21, 0],
-	['apps/docs/src/app/components/fluted-glass/scene.tsx', 32, 0],
-	['apps/docs/src/app/dev/fluted-glass-benchmark/benchmark-scene.tsx', 75, 0],
-	['apps/docs/src/app/dev/fluted-glass-benchmark/page.dev.tsx', 12, 0],
-	['apps/docs/src/app/dev/fluted-glass-probe/page.dev.tsx', 11, 0],
-	['apps/docs/src/app/dev/fluted-glass-probe/probe-scene.tsx', 76, 0],
-	['apps/docs/src/content/components.ts', 5, 0],
-	['apps/docs/src/content/taxonomy.ts', 2, 0],
-	['docs/adr/0004-effects-resample-by-wrapping-the-sampler.md', 16, 0],
-	['packages/shaders/src/components/fluted-glass/fluted-glass.test.tsx', 274, 0],
-	['packages/shaders/src/components/fluted-glass/shader.tsx', 326, 0],
-	['packages/shaders/src/primitives/flute-surface/flute-surface.test.ts', 53, 0],
-	['scripts/build-posters.sh', 10, 2],
+/**
+ * #264's changed files that no block pointer in the fixture guide names, in GitHub's order, with their line counts.
+ * GitHub counts no lines in a binary file.
+ */
+const ALSO_CHANGED_264: [path: string, lines: [added: number, removed: number] | 'binary'][] = [
+	['.changeset/fluted-glass.md', [16, 0]],
+	['GLOSSARY.md', [18, 0]],
+	['apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-darwin.png', 'binary'],
+	['apps/docs/public/posters/fluted-glass.jpg', 'binary'],
+	['apps/docs/public/posters/fluted-glass.thumb.webp', 'binary'],
+	['apps/docs/src/app/components/demo-registry.tsx', [18, 0]],
+	['apps/docs/src/app/components/fluted-glass/demo.tsx', [90, 0]],
+	['apps/docs/src/app/components/fluted-glass/params.ts', [21, 0]],
+	['apps/docs/src/app/components/fluted-glass/scene.tsx', [32, 0]],
+	['apps/docs/src/app/dev/fluted-glass-benchmark/benchmark-scene.tsx', [75, 0]],
+	['apps/docs/src/app/dev/fluted-glass-benchmark/page.dev.tsx', [12, 0]],
+	['apps/docs/src/app/dev/fluted-glass-probe/page.dev.tsx', [11, 0]],
+	['apps/docs/src/app/dev/fluted-glass-probe/probe-scene.tsx', [76, 0]],
+	['apps/docs/src/content/components.ts', [5, 0]],
+	['apps/docs/src/content/taxonomy.ts', [2, 0]],
+	['docs/adr/0004-effects-resample-by-wrapping-the-sampler.md', [16, 0]],
+	['packages/shaders/src/components/fluted-glass/fluted-glass.test.tsx', [274, 0]],
+	['packages/shaders/src/components/fluted-glass/shader.tsx', [326, 0]],
+	['packages/shaders/src/primitives/flute-surface/flute-surface.test.ts', [53, 0]],
+	['scripts/build-posters.sh', [10, 2]],
 ];
 
 function escapeRegExp(text: string): string {
@@ -50,8 +53,10 @@ test('"Also changed" lists every changed file that no block pointer covers, with
 
 	const alsoChanged = page.getByRole('region', { name: 'Steps' }).getByRole('region', { name: 'Also changed' });
 	await expect(alsoChanged.getByRole('listitem')).toHaveText(
-		ALSO_CHANGED_264.map(
-			([path, added, removed]) => new RegExp(`^${escapeRegExp(path)} .*${added} lines added, ${removed} removed$`),
+		ALSO_CHANGED_264.map(([path, lines]) =>
+			lines === 'binary'
+				? new RegExp(`^${escapeRegExp(path)} added Binary$`)
+				: new RegExp(`^${escapeRegExp(path)} .*${lines[0]} lines added, ${lines[1]} removed$`),
 		),
 	);
 });

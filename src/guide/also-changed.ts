@@ -7,6 +7,8 @@ import type { PullRequestFiles } from './resolve.ts';
 export interface AlsoChangedFile extends ChangedFile {
 	/** For an image file, the image after the change, or before it for a deleted image. */
 	thumbnail: PageImage | null;
+	/** True for a binary file, whose line counts GitHub leaves at 0. */
+	binary: boolean;
 }
 
 /**
@@ -18,8 +20,17 @@ export function alsoChanged(steps: ParsedStep[], files: PullRequestFiles, pageUr
 	return files.changed
 		.filter((file) => !covered.has(file.path))
 		.map((file) => {
-			if (!isImagePath(file.path)) return { ...file, thumbnail: null };
+			const binary = isBinary(file);
+			if (!isImagePath(file.path)) return { ...file, thumbnail: null, binary };
 			const { before, after } = imagePair(file, files.diff, pageUrl);
-			return { ...file, thumbnail: after ?? before };
+			return { ...file, thumbnail: after ?? before, binary };
 		});
+}
+
+/**
+ * GitHub sends a binary file with no patch and no line counts.
+ * A file renamed without edits has no patch either, but its counts of 0 are true.
+ */
+function isBinary(file: ChangedFile): boolean {
+	return file.patch === undefined && file.additions + file.deletions === 0 && file.status !== 'renamed';
 }

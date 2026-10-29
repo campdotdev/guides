@@ -21,13 +21,19 @@ const { files } = Astro.props;
 						)}
 						<span class="file-path">{file.path}</span>{' '}
 						<span class="file-status">{file.status}</span>{' '}
-						<span class="line-counts" aria-hidden="true">
-							<span class="additions">+{file.additions}</span>
-							<span class="deletions">-{file.deletions}</span>
-						</span>{' '}
-						<span class="visually-hidden">
-							{file.additions} lines added, {file.deletions} removed
-						</span>
+						{file.binary ? (
+							<span class="file-status">Binary</span>
+						) : (
+							<Fragment>
+								<span class="line-counts" aria-hidden="true">
+									<span class="additions">+{file.additions}</span>
+									<span class="deletions">-{file.deletions}</span>
+								</span>{' '}
+								<span class="visually-hidden">
+									{file.additions} lines added, {file.deletions} removed
+								</span>
+							</Fragment>
+						)}
 					</li>
 				))}
 			</ul>

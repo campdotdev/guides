@@ -171,7 +171,7 @@ A link with no text fails the build unless it is a block pointer alone on its li
 
 After the last step, the left pane lists every file that the pull request changes and no block pointer names, under the heading "Also changed". The renderer builds the list from the pull request's file list, so a guide cannot leave a file off it. An inline pointer does not take a file off the list.
 
-Each entry shows the file's path, its status, and its added and removed line counts. An image file also shows a thumbnail of the image at `headSha`, or at the merge base for a deleted image.
+Each entry shows the file's path, its status, and its added and removed line counts. GitHub counts no lines in a binary file, so a binary file shows "Binary" instead. An image file also shows a thumbnail of the image at `headSha`, or at the merge base for a deleted image.
 
 When block pointers name every changed file, the page has no "Also changed" section.
 
