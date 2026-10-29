@@ -53,6 +53,14 @@ const noneReviewed = reviewedCount(0, paths.length);
 	initReviewedFiles();
 </script>
 
+<script>
+	import { initStepKeys } from '../client/step-keys.ts';
+	import { initStepLinks } from '../client/step-links.ts';
+
+	initStepLinks();
+	initStepKeys();
+</script>
+
 <style>
 	.step {
 		margin-bottom: 16px;

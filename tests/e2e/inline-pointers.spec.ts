@@ -74,7 +74,8 @@ test('clicking an inline pointer scrolls its lines into view and keeps them high
 	await expect(firstLine).toBeInViewport();
 	await expect(lastLine).toBeInViewport();
 	await expect(page.getByRole('button', { name: STEP })).toHaveAttribute('aria-expanded', 'true');
-	await expect(page).toHaveURL(/\/guides\/shaders\/264\/$/);
+	// The click stays on the guide, and the URL's anchor names the open step.
+	await expect(page).toHaveURL(/\/guides\/shaders\/264\/#step-2$/);
 
 	// The reader moves the mouse to the code, and the lines stay highlighted.
 	await firstLine.hover();

@@ -59,7 +59,7 @@ The page shows the overview in the right pane until the reader opens a step.
 
 ## Steps
 
-Each second-level section after the overview is a step, and its heading is the step's title. The page numbers the steps from 1, in file order.
+Each second-level section after the overview is a step, and its heading is the step's title. The page numbers the steps from 1, in file order. Step `n` has the anchor `#step-<n>`, so `https://campdotdev.github.io/guides/shaders/264/#step-2` opens that guide at step 2.
 
 A step holds two things:
 
@@ -78,14 +78,42 @@ A block pointer is a Markdown link with no text, alone on its line:
 
 The link target has two parts:
 
-- The path, relative to the repository root, with no leading `/` or `./`. The file must be one the pull request changes between `baseSha` and `headSha`, and GitHub must show a text diff for it.
-- The line range, as `#L<start>-L<end>` or `#L<line>`. The lines are numbered in the file at `headSha`, and the range includes both ends. It must lie inside the file and overlap the diff.
+- The path, relative to the repository root, with no leading `/` or `./`. The file must be one the pull request changes between `baseSha` and `headSha`, and GitHub must show a text diff for it. A file renamed without edits is the exception. [New, deleted, and renamed files](#new-deleted-and-renamed-files) describes it.
+- The line range, as `#L<start>-L<end>` or `#L<line>`. The lines are numbered in the file at `headSha`, or at `baseSha` in a deleted file, and the range includes both ends. It must lie inside the file and overlap the diff.
 
-The page shows the diff rows from three lines before the range to three lines after it. The rows come from GitHub's hunks for the file, so they match the pull request's diff on GitHub. The page shows no rows outside those hunks. Two pointers into one file in the same step share one table, and rows they both show appear once.
+The page shows the diff rows from three lines before the range to three lines after it. The rows come from GitHub's hunks for the file, so they match the pull request's diff on GitHub. [Separators](#separators) hide the file's other lines. Two pointers into one file in the same step share one table, and rows they both show appear once.
 
-A block pointer cannot name deleted lines. To show a deletion, point at the lines around it.
+Outside a deleted file, a block pointer cannot name deleted lines. To show a deletion, point at the lines around it.
 
 A block pointer to an image file has no line range. [Image pointers](#image-pointers) describes it.
+
+## Separators
+
+A separator sits above, between, and below the rows a file's block pointers show. It hides the file's other lines and says how many diff lines it hides:
+
+| Separator | Hides |
+| --- | --- |
+| `12 unchanged lines` | Lines the pull request does not change. |
+| `87 more added lines` | Added lines outside the pointers' rows, such as the rest of a new file. |
+| `60 more removed lines` | Removed lines outside the pointers' rows, such as the rest of a deleted file. |
+| `73 more lines, 24 changed` | Unchanged lines and changed lines together. |
+
+Clicking a separator shows its lines, and clicking it again hides them. The build reads each file at `baseSha` and `headSha` to fill in the unchanged lines.
+
+A pointer range that spans two of GitHub's hunks shows both hunks, with a separator for the unchanged lines between them.
+
+## New, deleted, and renamed files
+
+A block pointer into a file that the pull request adds, deletes, or renames works like any other block pointer, with these differences:
+
+| File | Line numbers | The page shows |
+| --- | --- | --- |
+| New | At `headSha`. | Only added lines. The file header says **New file**. |
+| Deleted | At `baseSha`, because the file has no lines at `headSha`. | Only removed lines. The file header says **Deleted file**. |
+| Renamed | At `headSha`. The pointer names the new path. | The diff. The file header shows the new path and says **Renamed from** the old path. |
+| Renamed without edits | At `headSha`. The pointer names the new path. | The pointer's rows as unchanged lines, because GitHub shows no diff for the file. The file header says **Renamed from** the old path. |
+
+A pointer that names a renamed file's old path fails the build, because the pull request changes no file at that path.
 
 ## Image pointers
 
