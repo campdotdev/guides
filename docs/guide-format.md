@@ -146,15 +146,15 @@ An inline pointer is a link inside a step's prose. Its text is a phrase, and its
 The engine [exports the primitive](packages/shaders/src/engine.ts#L70-L74) for Mode 2.
 ```
 
-The path and the line range follow the block pointer rules. In a step's prose, any repository-relative target whose fragment starts with `L` and a digit is an inline pointer, so a malformed range, such as `#L10-20`, fails the build.
+The path and the line range follow the block pointer rules, so the lines are numbered at `headSha`, or at the merge base in a deleted file. In a step's prose, any repository-relative target whose fragment starts with `L` and a digit is an inline pointer, so a malformed range, such as `#L10-20`, fails the build.
 
-Every line in the range must be one that the step's own block pointers show, context lines included. An inline pointer fails the build when it names a line that only another step shows, or a line past a block pointer's context. An inline pointer cannot name deleted lines.
+Every line in the range must be one that the step's own block pointers show, context lines included. An inline pointer fails the build when it names a line that only another step shows, or a line past a block pointer's context. Outside a deleted file, an inline pointer cannot name removed lines.
 
 On the page, an inline pointer is a phrase with a dotted underline:
 
 - Hovering or focusing the phrase highlights its lines in the step's code.
 - Clicking the phrase opens the step's block if it is closed and scrolls the lines into view. The lines stay highlighted until the phrase loses focus.
-- The link's target is the lines on GitHub at `headSha`. A modified click, such as Cmd-click, opens it.
+- The link's target is the lines on GitHub at `headSha`, or at the merge base in a deleted file. A modified click, such as Cmd-click, opens it.
 
 The overview has no code to highlight, so a link there with a line range renders as a link to the lines on GitHub. To link lines that no step shows, such as unchanged code, use a full GitHub URL.
 

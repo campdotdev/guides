@@ -1,4 +1,5 @@
 ---
+import { lineOn } from '../guide/hunks.ts';
 import type { DiffRow, Hunk } from '../guide/patch.ts';
 import { hunkHeader } from '../guide/patch.ts';
 import type { StepFile } from '../guide/resolve.ts';
@@ -94,7 +95,7 @@ function separatorLabel(rows: DiffRow[]): string {
 							</tr>
 						)}
 						{segment.rows.map((row) => (
-							<tr class={`row row-${row.kind}`} data-head-line={row.newLine}>
+							<tr class={`row row-${row.kind}`} data-line={lineOn(row, file.side)}>
 								<td class="line-number">{row.oldLine}</td>
 								<td class="line-number">{row.newLine}</td>
 								<td class="marker">

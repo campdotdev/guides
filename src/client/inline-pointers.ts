@@ -3,8 +3,9 @@
  * Hovering or focusing the phrase highlights those lines in the left pane.
  * A click opens the step's block if it is closed and scrolls the lines into view.
  *
- * The build marks each inline pointer's link with `data-pointer-file`, `data-pointer-start`, and `data-pointer-end`,
- * and each diff row with the line it shows at the head commit, `data-head-line`.
+ * The build marks each inline pointer's link with `data-pointer-file`, `data-pointer-start`, and `data-pointer-end`.
+ * It marks each diff row with `data-line`, the line number that pointers into the file use: the row's line at the head
+ * commit, or at the merge base in a deleted file.
  */
 import { selectedStep, selectStep } from './step-selection.ts';
 
@@ -79,8 +80,8 @@ function linesOf(link: HTMLElement): HTMLElement[] {
 	);
 	const start = Number(link.dataset.pointerStart);
 	const end = Number(link.dataset.pointerEnd);
-	return [...(file?.querySelectorAll<HTMLElement>('[data-head-line]') ?? [])].filter((row) => {
-		const line = Number(row.dataset.headLine);
+	return [...(file?.querySelectorAll<HTMLElement>('[data-line]') ?? [])].filter((row) => {
+		const line = Number(row.dataset.line);
 		return line >= start && line <= end;
 	});
 }

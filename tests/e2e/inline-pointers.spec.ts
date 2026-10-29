@@ -85,6 +85,24 @@ test('clicking an inline pointer scrolls its lines into view and keeps them high
 	await expectEngineLines70To74(engine);
 });
 
+test('an inline pointer into a deleted file highlights the removed lines it names', async ({ page }) => {
+	await page.goto('/guides/shaders/193/');
+	await page.getByRole('button', { name: 'Step 1: Delete LiveDemo' }).click();
+	const pointer = page.getByRole('region', { name: 'Explanation' }).getByRole('link', { name: 'took a demo as its children' });
+	const demo = page.getByRole('table', { name: 'apps/docs/src/components/LiveDemo.tsx' });
+
+	// LiveDemo.tsx has no lines at the head commit, so the pointer counts lines at the merge base and links there.
+	await expect(pointer).toHaveAttribute(
+		'href',
+		'https://github.com/campdotdev/shaders/blob/d067b53260833ee0d9c6c201adf6eab98404dd9d/apps/docs/src/components/LiveDemo.tsx#L13-L19',
+	);
+	await pointer.hover();
+	const rows = highlightedRows(demo);
+	await expect(rows).toHaveCount(7);
+	await expect(rows.first()).toHaveAccessibleName('13 removed export function LiveDemo({');
+	await expect(rows.last()).toHaveAccessibleName('19 removed }: LiveDemoProps) {');
+});
+
 test('the format reference documents inline pointers and their build error', async ({ page }) => {
 	await page.goto('/guides/format/');
 

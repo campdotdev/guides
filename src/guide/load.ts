@@ -46,7 +46,7 @@ export async function loadGuide(
 		const parsed = parseGuide(entry.body ?? '');
 		const pull = pullRequestOf(meta);
 		const files = await PullRequestFiles.load(pull, source);
-		const context = { repo: meta.repo, headSha: meta.headSha };
+		const context = { repo: meta.repo, headSha: meta.headSha, mergeBaseSha: files.diff.baseSha };
 		const pageUrl = guideUrl(meta);
 		const steps = await Promise.all(
 			parsed.steps.map(async (step): Promise<Step> => {

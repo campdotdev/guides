@@ -12,6 +12,11 @@ export type Side = 'base' | 'head';
 
 const LINE_OF = { base: 'oldLine', head: 'newLine' } as const;
 
+/** The row's line number on `side`, or null when the row has no line there, such as an added row at the base. */
+export function lineOn(row: DiffRow, side: Side): number | null {
+	return row[LINE_OF[side]];
+}
+
 /** The lines a hunk covers on `side`. */
 export function linesOn(hunk: Hunk, side: Side): LineRange {
 	const [start, count] = side === 'head' ? [hunk.newStart, hunk.newLines] : [hunk.oldStart, hunk.oldLines];
@@ -35,7 +40,7 @@ export function cutHunks(hunks: Hunk[], ranges: LineRange[], side: Side = 'head'
 		const keep = hunk.rows.map(() => false);
 		for (const range of ranges) {
 			const inWindow = hunk.rows.flatMap((row, index) => {
-				const line = row[LINE_OF[side]];
+				const line = lineOn(row, side);
 				return line !== null && line >= range.start - context && line <= range.end + context ? [index] : [];
 			});
 			if (inWindow.length === 0) continue;

@@ -16,6 +16,8 @@ export interface ProseContext {
 	repo: string;
 	/** The commit that relative links resolve against. */
 	headSha: string;
+	/** The merge base. An inline pointer into a deleted file links there, because the file has no lines at the head. */
+	mergeBaseSha: string;
 }
 
 /**
@@ -39,9 +41,14 @@ const processor = unified().use(remarkRehype).use(rehypeSanitize, schema).use(re
 export function renderProse(nodes: RootContent[], context: ProseContext): Html {
 	const tree: Root = { type: 'root', children: structuredClone(nodes) };
 	visit(tree, 'link', (link) => {
-		if (isRepoRelative(link.url)) link.url = `https://github.com/${context.repo}/blob/${context.headSha}/${link.url}`;
+		if (isRepoRelative(link.url)) link.url = blobUrl(context.repo, context.headSha, link.url);
 	});
 	return processor.stringify(processor.runSync(tree));
+}
+
+/** The GitHub URL of a repo-relative target, such as `src/engine.ts#L1-L5`, at a commit. */
+export function blobUrl(repo: string, commitSha: string, target: string): string {
+	return `https://github.com/${repo}/blob/${commitSha}/${target}`;
 }
 
 /** True for a path such as `src/engine.ts#L1-L5`, false for a URL, an absolute path, or a same-page anchor. */

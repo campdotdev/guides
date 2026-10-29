@@ -21,6 +21,8 @@ export interface StepFile {
 	basePath: string;
 	status: FileStatus;
 	blobSha: string;
+	/** The commit whose line numbers the file's pointers use: the head, or the merge base for a deleted file. */
+	side: Side;
 	/** The file's text at the merge base, or null when it does not exist there. */
 	base: string | null;
 	/** The file's text at the head commit, or null when it does not exist there. */
@@ -98,6 +100,7 @@ export class PullRequestFiles {
 			basePath: versions.base?.path ?? path,
 			status: changed.status,
 			blobSha: changed.blobSha,
+			side,
 			base,
 			head,
 			hunks: visible,
