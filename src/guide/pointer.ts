@@ -24,7 +24,7 @@ export function parseBlockPointer(href: string, field: string): Pointer {
 		throw new GuideError(field, `"${href}" is not a repo-relative path. A block pointer looks like [](src/file.ts#L10-L20).`);
 	}
 	const hash = href.indexOf('#');
-	const path = decodeURI(hash === -1 ? href : href.slice(0, hash));
+	const path = decodeURIComponent(hash === -1 ? href : href.slice(0, hash));
 	const fragment = hash === -1 ? '' : href.slice(hash + 1);
 	if (path === '') throw new GuideError(field, `"${href}" names no file.`);
 	if (fragment === '') {
@@ -54,7 +54,7 @@ export interface ImagePointer {
 export function parseImagePointer(href: string, field: string): ImagePointer | undefined {
 	if (!isRepoRelative(href)) return undefined;
 	const hash = href.indexOf('#');
-	const path = decodeURI(hash === -1 ? href : href.slice(0, hash));
+	const path = decodeURIComponent(hash === -1 ? href : href.slice(0, hash));
 	if (!isImagePath(path)) return undefined;
 	if (hash !== -1) {
 		throw new GuideError(field, `"${href}" points at an image, which takes no line range. Write [](${path}).`);

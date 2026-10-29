@@ -124,7 +124,7 @@ A block pointer to an image file shows the image instead of a diff. It is a link
 [](apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png)
 ```
 
-An image file is a file whose name ends in `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`, in any letter case, so `.PNG` counts too. The file must be one the pull request changes between `baseSha` and `headSha`. A line range on an image pointer fails the build.
+An image file is a file whose name ends in `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, or `.webp`, in any letter case, so `.PNG` counts too. An SVG file is not an image file here: a script inside an SVG would run on the site when a reader opens the file, so the site never publishes one. Point at an SVG's lines like any other text file. The file must be one the pull request changes between `baseSha` and `headSha`. A line range on an image pointer fails the build.
 
 The page shows the image at the merge base under "Before" and the image at `headSha` under "After". It shows only the versions that exist:
 

@@ -1,13 +1,15 @@
 import { fileVersions, type ChangedFile, type DiffCommits, type FileStatus, type FileVersion } from '../repo-files/index.ts';
 
-/** The image files a guide shows as images, by extension, with the media type of each. */
+/**
+ * The image files a guide shows as images, by extension, with the media type of each. SVG is left out: the build
+ * copies images onto the site, and a script inside an SVG would run on the Pages origin when the file is opened.
+ */
 const IMAGE_TYPES: Record<string, string> = {
 	'.avif': 'image/avif',
 	'.gif': 'image/gif',
 	'.jpeg': 'image/jpeg',
 	'.jpg': 'image/jpeg',
 	'.png': 'image/png',
-	'.svg': 'image/svg+xml',
 	'.webp': 'image/webp',
 };
 

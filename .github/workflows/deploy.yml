@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # configure-pages reads the Pages site through the API.
+      pages: read
     steps:
       - uses: actions/checkout@v7
         with:
