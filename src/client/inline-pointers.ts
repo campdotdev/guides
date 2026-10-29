@@ -45,11 +45,24 @@ export function initInlinePointers(): void {
 	}
 }
 
-/** Highlights the lines of the hovered or focused pointer, and clears every other highlight. */
+/** The marks that hold the highlighted rows' code. */
+let marks: HTMLElement[] = [];
+
+/**
+ * Highlights the lines of the hovered or focused pointer, and clears every other highlight.
+ * Each highlighted row's code goes into a `<mark>`, so screen readers announce the lines as highlighted.
+ */
 function highlight(): void {
 	const link = hovered ?? focused;
-	for (const row of document.querySelectorAll('[data-highlighted]')) row.removeAttribute('data-highlighted');
-	for (const row of link ? linesOf(link) : []) row.setAttribute('data-highlighted', '');
+	for (const mark of marks) mark.replaceWith(...mark.childNodes);
+	marks = (link ? linesOf(link) : []).flatMap((row) => {
+		const code = row.querySelector('td.code');
+		if (!code) return [];
+		const mark = document.createElement('mark');
+		mark.append(...code.childNodes);
+		code.append(mark);
+		return [mark];
+	});
 }
 
 /** The number of the step whose explanation holds the link. */

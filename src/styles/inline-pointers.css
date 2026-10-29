@@ -26,11 +26,19 @@
 	text-decoration-color: var(--pointer-bar);
 }
 
-/* A cell's background paints over its row's, so the tint keeps an added or removed row's color underneath. */
-tr[data-highlighted] > td {
+/*
+ * src/client/inline-pointers.ts puts a highlighted row's code in a <mark>, and the whole row takes the tint.
+ * A cell's background paints over its row's, so the tint keeps an added or removed row's color underneath.
+ */
+tr:has(> td > mark) > td {
 	background-color: var(--pointer-highlight);
 }
 
-tr[data-highlighted] > td:first-child {
+tr:has(> td > mark) > td:first-child {
 	box-shadow: inset 3px 0 0 var(--pointer-bar);
+}
+
+td > mark {
+	background: none;
+	color: inherit;
 }

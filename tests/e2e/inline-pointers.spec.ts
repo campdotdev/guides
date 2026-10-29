@@ -19,9 +19,12 @@ async function openStep(page: Page): Promise<{ pointer: Locator; engine: Locator
 	};
 }
 
-/** The rows of a file's diff that the page highlights. */
+/** Playwright's role engine gives `<mark>` the mark role, but its `AriaRole` type leaves that role out. */
+const MARK = 'mark' as Parameters<Locator['getByRole']>[0];
+
+/** The rows of a file's diff that the page highlights. A highlighted row holds its code in a mark. */
 function highlightedRows(table: Locator): Locator {
-	return table.getByRole('row').and(table.page().locator('[data-highlighted]'));
+	return table.getByRole('row').filter({ has: table.page().getByRole(MARK) });
 }
 
 async function expectEngineLines70To74(table: Locator): Promise<void> {
