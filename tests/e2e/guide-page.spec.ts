@@ -19,6 +19,21 @@ test('the right pane shows the overview before any click', async ({ page }) => {
 	}
 });
 
+test('inline code in the explanation moves to the next line whole instead of breaking', async ({ page }) => {
+	await page.goto(GUIDE);
+	// The overview holds code such as `/dev/fluted-glass-probe`, where a browser may break a line after `/` or `-`.
+	const code = page.getByRole('region', { name: 'Explanation' }).getByRole('code');
+	await expect(code.first()).toBeVisible();
+
+	for (let width = 360; width <= 1400; width += 20) {
+		await page.setViewportSize({ width, height: 800 });
+		const split = await code.evaluateAll((elements) =>
+			elements.filter((element) => element.getClientRects().length > 1).map((element) => element.textContent),
+		);
+		expect(split, `inline code split across lines at ${width}px`).toEqual([]);
+	}
+});
+
 test('the header links the pull request and names the commit the guide describes', async ({ page }) => {
 	await page.goto(GUIDE);
 

@@ -97,6 +97,21 @@ a {
 	font: 0.875em var(--mono);
 }
 
+/*
+ * A browser may break a line after `-`, `/`, or `?`, which splits code such as `?visualTest=1` across two lines.
+ * As an inline block, inline code moves to the next line whole, and it wraps only when it is longer than a line.
+ */
+.prose :not(pre) > code {
+	display: inline-block;
+	max-width: 100%;
+	overflow-wrap: anywhere;
+}
+
+/* A link's underline skips inline blocks, so code inside a link draws its own. */
+.prose a code {
+	text-decoration: inherit;
+}
+
 .prose pre {
 	padding: 12px 16px;
 	overflow-x: auto;
