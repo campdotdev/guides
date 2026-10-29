@@ -5,7 +5,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { GuideError } from './errors.ts';
-import { parseBlockPointer, type Pointer } from './pointer.ts';
+import { parseBlockPointer, parseImagePointer, type ImagePointer, type Pointer } from './pointer.ts';
 
 /** The overview's four parts, in the order a guide must write them. */
 export const OVERVIEW_PARTS = [
@@ -29,8 +29,10 @@ export interface ParsedStep {
 	title: string;
 	/** The explanation, with the block pointers taken out. */
 	prose: RootContent[];
-	/** The block pointers, in the order the guide lists them. */
+	/** The block pointers to lines of text files, in the order the guide lists them. */
 	pointers: Pointer[];
+	/** The block pointers to image files, in the order the guide lists them. */
+	images: ImagePointer[];
 }
 
 const OVERVIEW_HEADING = 'Overview';
@@ -62,17 +64,24 @@ function parseStep(section: Section, number: number): ParsedStep {
 
 	const prose: RootContent[] = [];
 	const pointers: Pointer[] = [];
+	const images: ImagePointer[] = [];
 	for (const node of section.children) {
 		const link = blockPointerLink(node);
-		if (link) pointers.push(parseBlockPointer(link.url, `${field}.pointers.${pointers.length + 1}`));
-		else prose.push(node);
+		if (!link) {
+			prose.push(node);
+			continue;
+		}
+		const pointerField = `${field}.pointers.${pointers.length + images.length + 1}`;
+		const image = parseImagePointer(link.url, pointerField);
+		if (image) images.push(image);
+		else pointers.push(parseBlockPointer(link.url, pointerField));
 	}
 	rejectStrayPointers(prose, field);
 	if (!prose.some(isContent)) throw new GuideError(field, `"${title}" has no explanation.`);
-	if (pointers.length === 0) {
+	if (pointers.length === 0 && images.length === 0) {
 		throw new GuideError(`${field}.pointers`, `"${title}" has no block pointer. Add one on its own line, such as [](src/file.ts#L10-L20).`);
 	}
-	return { number, title, prose, pointers };
+	return { number, title, prose, pointers, images };
 }
 
 /** A block pointer is a paragraph that holds only a link with no text: `[](src/file.ts#L10-L20)`. */

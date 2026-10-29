@@ -1,13 +1,15 @@
 ---
 import type { Step } from '../guide/load.ts';
 import FileDiff from './FileDiff.astro';
+import ImageDiff from './ImageDiff.astro';
 
 interface Props {
 	step: Step;
 }
 const { step } = Astro.props;
 const id = `step-${step.number}`;
-const fileCount = `${step.files.length} ${step.files.length === 1 ? 'file' : 'files'}`;
+const paths = [...step.files, ...step.images].map((file) => file.path);
+const fileCount = `${paths.length} ${paths.length === 1 ? 'file' : 'files'}`;
 ---
 
 <article class="step" id={id} data-step={step.number} aria-labelledby={`${id}-heading`}>
@@ -26,11 +28,12 @@ const fileCount = `${step.files.length} ${step.files.length === 1 ? 'file' : 'fi
 			<span class="visually-hidden">{step.additions} lines added, {step.deletions} removed</span>
 		</p>
 		<ul class="step-files">
-			{step.files.map((file) => <li>{file.path}</li>)}
+			{paths.map((path) => <li>{path}</li>)}
 		</ul>
 	</div>
 	<div id={`${id}-code`} class="step-code" hidden>
 		{step.files.map((file, index) => <FileDiff file={file} id={`${id}-file-${index + 1}`} />)}
+		{step.images.map((image, index) => <ImageDiff image={image} id={`${id}-image-${index + 1}`} />)}
 	</div>
 </article>
 

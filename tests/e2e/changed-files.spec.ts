@@ -2,8 +2,10 @@
  * SHA-283: a guide page accounts for every changed file, images included.
  *
  * The specs read the fixture guides in tests/fixtures/guides, and the build serves each pull request's files from
- * the snapshot in tests/fixtures/repo-files. campdotdev/shaders#264 adds images.
+ * the snapshot in tests/fixtures/repo-files. campdotdev/shaders#264 adds images, #235 changes them, and #243 deletes one.
  */
+import { createHash } from 'node:crypto';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './test.ts';
 
 const GUIDE = '/guides/shaders/264/';
@@ -12,9 +14,7 @@ const GUIDE = '/guides/shaders/264/';
 const ALSO_CHANGED_264: [path: string, added: number, removed: number][] = [
 	['.changeset/fluted-glass.md', 16, 0],
 	['GLOSSARY.md', 18, 0],
-	['apps/docs-tests/visual/fluted-glass.spec.ts', 254, 0],
 	['apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-darwin.png', 0, 0],
-	['apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png', 0, 0],
 	['apps/docs/public/posters/fluted-glass.jpg', 0, 0],
 	['apps/docs/public/posters/fluted-glass.thumb.webp', 0, 0],
 	['apps/docs/src/app/components/demo-registry.tsx', 18, 0],
@@ -38,6 +38,12 @@ function escapeRegExp(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/** The SHA that `git hash-object` prints for the file an image shows, which tells which commit's version it is. */
+async function blobShaOf(page: Page, image: Locator): Promise<string> {
+	const response = await page.request.get(new URL((await image.getAttribute('src'))!, page.url()).href);
+	const bytes = await response.body();
+	return createHash('sha1').update(`blob ${bytes.byteLength}\0`).update(bytes).digest('hex');
+}
 
 test('"Also changed" lists every changed file that no block pointer covers, with its line counts', async ({ page }) => {
 	await page.goto(GUIDE);
@@ -57,7 +63,6 @@ test('image files in "Also changed" show as thumbnails', async ({ page }) => {
 	// #264 adds these images, so each thumbnail is the image at the head commit. The widths are the files' own.
 	const thumbnails = [
 		['apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-darwin.png', 560],
-		['apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png', 560],
 		['apps/docs/public/posters/fluted-glass.jpg', 1792],
 		['apps/docs/public/posters/fluted-glass.thumb.webp', 124],
 	] as const;
@@ -67,4 +72,44 @@ test('image files in "Also changed" show as thumbnails', async ({ page }) => {
 		await thumbnail.scrollIntoViewIfNeeded();
 		await expect(thumbnail).toHaveJSProperty('naturalWidth', width);
 	}
+});
+
+test('a block pointer to a new image shows only the image after the change', async ({ page }) => {
+	await page.goto(GUIDE);
+	const title = 'Step 3: Record the default look as a baseline';
+	await page.getByRole('button', { name: title }).click();
+
+	const path = 'apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png';
+	const image = page.getByRole('article', { name: title }).getByRole('group', { name: path });
+	// The baseline is a 560 by 374 PNG.
+	await expect(image.getByRole('img', { name: `${path} after the change` })).toHaveJSProperty('naturalWidth', 560);
+	await expect(image.getByRole('img')).toHaveCount(1);
+});
+
+test('a block pointer to a changed image shows it before and after the change', async ({ page }) => {
+	await page.goto('/guides/shaders/235/');
+	const title = "Step 1: Regenerate Aurora's baselines";
+	await page.getByRole('button', { name: title }).click();
+
+	const path = 'apps/docs-tests/visual/aurora.spec.ts-snapshots/aurora-default-chromium-linux.png';
+	const image = page.getByRole('article', { name: title }).getByRole('group', { name: path });
+	const before = image.getByRole('img', { name: `${path} before the change` });
+	const after = image.getByRole('img', { name: `${path} after the change` });
+	await expect(before).toHaveJSProperty('naturalWidth', 560);
+	await expect(after).toHaveJSProperty('naturalWidth', 560);
+	// GitHub's blob SHAs for the baseline at #235's base and head commits.
+	expect(await blobShaOf(page, before)).toBe('1374a86cfbee6729c50480295b10a9a0f48128cc');
+	expect(await blobShaOf(page, after)).toBe('e337458767ddf429a3a0f8ddfe0e4d3a2c8e60e1');
+});
+
+test('a block pointer to a deleted image shows only the image before the change', async ({ page }) => {
+	await page.goto('/guides/shaders/243/');
+	const title = 'Step 1: Draw the card in code instead of an image';
+	await page.getByRole('button', { name: title }).click();
+
+	const path = 'apps/docs/public/features/performant.png';
+	const image = page.getByRole('article', { name: title }).getByRole('group', { name: path });
+	// The deleted image is a 624 by 618 PNG.
+	await expect(image.getByRole('img', { name: `${path} before the change` })).toHaveJSProperty('naturalWidth', 624);
+	await expect(image.getByRole('img')).toHaveCount(1);
 });

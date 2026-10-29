@@ -44,6 +44,11 @@ const cases = [
 		dir: 'unchanged-file',
 		error: /Invalid guide shaders\/264\.md: steps\.2\.pointers\.1: packages\/shaders\/src\/index\.ts is not a file that campdotdev\/shaders#264 changes/,
 	},
+	{
+		guide: 'an image pointer with a line range',
+		dir: 'image-line-range',
+		error: /Invalid guide shaders\/264\.md: steps\.3\.pointers\.2: ".*fluted-glass-default-chromium-linux\.png#L1-L5" points at an image, which takes no line range/,
+	},
 ];
 
 for (const { guide, dir, error } of cases) {

@@ -43,6 +43,7 @@ test('each step starts as a collapsed block in the left pane', async ({ page }) 
 	await expect(toggles).toHaveText([
 		'Step 1: Mount FlutedGlass after a Source',
 		'Step 2: Shape each flute in one primitive',
+		'Step 3: Record the default look as a baseline',
 	]);
 	for (const toggle of await toggles.all()) {
 		await expect(toggle).toHaveAttribute('aria-expanded', 'false');

@@ -18,7 +18,7 @@ export function alsoChanged(
 	pull: PullRequestRef,
 	pageUrl: string,
 ): AlsoChangedFile[] {
-	const covered = new Set(steps.flatMap((step) => step.pointers.map((pointer) => pointer.path)));
+	const covered = new Set(steps.flatMap((step) => [...step.pointers, ...step.images].map((pointer) => pointer.path)));
 	return changed
 		.filter((file) => !covered.has(file.path))
 		.map((file) => {

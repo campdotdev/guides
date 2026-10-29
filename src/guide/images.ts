@@ -1,4 +1,6 @@
-import type { ChangedFile, PullRequestRef } from '../repo-files/index.ts';
+import type { ChangedFile, FileStatus, PullRequestRef } from '../repo-files/index.ts';
+import { GuideError } from './errors.ts';
+import type { ImagePointer } from './pointer.ts';
 
 /** The image files a guide shows as images, by extension, with the media type of each. */
 const IMAGE_TYPES: Record<string, string> = {
@@ -69,4 +71,38 @@ export function imagePair(file: ChangedFile, pull: PullRequestRef, pageUrl: stri
 		before: before && image(before, 'before'),
 		after: after && image(after, 'after'),
 	};
+}
+
+/** One image file in a step, with the images its block pointer shows. */
+export interface StepImage extends ImagePair {
+	path: string;
+	status: FileStatus;
+	blobSha: string;
+}
+
+/**
+ * Resolves a step's image pointers against the pull request's changed files, once per file, in the order the step
+ * first points at each one. Throws a GuideError when a pointer names a file the pull request does not change.
+ */
+export function stepImages(
+	pointers: ImagePointer[],
+	changed: ChangedFile[],
+	pull: PullRequestRef,
+	pageUrl: string,
+): StepImage[] {
+	const images = new Map<string, StepImage>();
+	for (const pointer of pointers) {
+		if (images.has(pointer.path)) continue;
+		const file = changed.find((candidate) => candidate.path === pointer.path);
+		if (!file) {
+			throw new GuideError(pointer.field, `${pointer.path} is not a file that ${pull.owner}/${pull.repo}#${pull.pr} changes.`);
+		}
+		images.set(pointer.path, {
+			path: file.path,
+			status: file.status,
+			blobSha: file.blobSha,
+			...imagePair(file, pull, pageUrl),
+		});
+	}
+	return [...images.values()];
 }
