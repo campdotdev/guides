@@ -83,9 +83,29 @@ The page shows the diff rows from three lines before the range to three lines af
 
 A block pointer cannot name deleted lines. To show a deletion, point at the lines around it.
 
-## Inline pointers and links
+## Inline pointers
 
-A link with text and a repository-relative target renders as a link to that path on GitHub at `headSha`. When the target has a line range, such as `[the export](packages/shaders/src/engine.ts#L70)`, the link is an inline pointer, and it links to those lines.
+An inline pointer is a link inside a step's prose. Its text is a phrase, and its target is a repository-relative path with a line range:
+
+```markdown
+The engine [exports the primitive](packages/shaders/src/engine.ts#L70-L74) for Mode 2.
+```
+
+The path and the line range follow the block pointer rules. In a step's prose, any repository-relative target whose fragment starts with `L` and a digit is an inline pointer, so a malformed range, such as `#L10-20`, fails the build.
+
+Every line in the range must be one that the step's own block pointers show, context lines included. An inline pointer fails the build when it names a line that only another step shows, or a line past a block pointer's context. An inline pointer cannot name deleted lines.
+
+On the page, an inline pointer is a phrase with a dotted underline:
+
+- Hovering or focusing the phrase highlights its lines in the step's code.
+- Clicking the phrase opens the step's block if it is closed and scrolls the lines into view. The lines stay highlighted until the phrase loses focus.
+- The link's target is the lines on GitHub at `headSha`. A modified click, such as Cmd-click, opens it.
+
+The overview has no code to highlight, so a link there with a line range renders as a link to the lines on GitHub. To link lines that no step shows, such as unchanged code, use a full GitHub URL.
+
+## Other links
+
+A link with text and a repository-relative target with no line range renders as a link to that path on GitHub at `headSha`.
 
 Any other link, such as a link to a glossary entry or an ADR, renders as an ordinary link.
 
@@ -111,6 +131,7 @@ A frontmatter error names the field the same way, such as `headSha: Expected a f
 | `steps.<n>` | Step `n`'s title or prose. |
 | `steps.<n>.pointers` | Step `n` has no block pointer. |
 | `steps.<n>.pointers.<m>` | Block pointer `m` in step `n`. |
+| `steps.<n>.inlinePointers.<m>` | Inline pointer `m` in step `n`, counted in reading order. |
 
 Step and pointer numbers start at 1, like the step numbers on the page.
 
@@ -147,7 +168,7 @@ A UV warp mounted before FlutedGlass hands the glass a coordinate it already mov
 
 ## Shape each flute in one primitive
 
-`fluteSurface` works out how steep the glass is and how far it moves the image, in one call. The engine exports it for Mode 2.
+`fluteSurface` works out how steep the glass is and how far it moves the image, in one call. The engine [exports it](packages/shaders/src/engine.ts#L70-L74) for Mode 2.
 
 [](packages/shaders/src/primitives/flute-surface/flute-surface.ts#L108-L115)
 

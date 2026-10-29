@@ -80,3 +80,10 @@ test('clicking an inline pointer scrolls its lines into view and keeps them high
 	await firstLine.hover();
 	await expectEngineLines70To74(engine);
 });
+
+test('the format reference documents inline pointers and their build error', async ({ page }) => {
+	await page.goto('/guides/format/');
+
+	await expect(page.getByRole('heading', { level: 2, name: 'Inline pointers', exact: true })).toBeVisible();
+	await expect(page.getByRole('cell', { name: 'steps.<n>.inlinePointers.<m>', exact: true })).toBeVisible();
+});
