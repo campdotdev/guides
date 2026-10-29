@@ -15,7 +15,7 @@
 			"blobSha": "cc4fd736ad9c33b97434f79ef84cc0e0f5f07f97",
 			"additions": 0,
 			"deletions": 0,
-			"previousPath": "CONTEXT.md"
+			"basePath": "CONTEXT.md"
 		},
 		{
 			"path": "apps/docs/src/components/search/search.module.css",

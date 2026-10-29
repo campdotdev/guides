@@ -67,7 +67,7 @@ function toChangedFile(entry: DiffEntry): ChangedFile {
 		additions: entry.additions,
 		deletions: entry.deletions,
 	};
-	if (entry.previous_filename !== undefined) file.previousPath = entry.previous_filename;
+	if (entry.previous_filename !== undefined) file.basePath = entry.previous_filename;
 	if (entry.patch !== undefined) file.patch = entry.patch;
 	return file;
 }

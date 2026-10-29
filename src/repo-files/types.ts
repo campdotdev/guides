@@ -29,8 +29,8 @@ export type FileStatus =
 /** One file that a pull request changes, as GitHub's compare view lists it. */
 export interface ChangedFile {
 	path: string;
-	/** The path at the base commit. GitHub sets it only for renamed and copied files. */
-	previousPath?: string;
+	/** The path at the merge base, when it differs from `path`. GitHub sets it only for renamed and copied files. */
+	basePath?: string;
 	status: FileStatus;
 	/** The blob SHA at the head commit, or the deleted blob's SHA for a removed file. */
 	blobSha: string;

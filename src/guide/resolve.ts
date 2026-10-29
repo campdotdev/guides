@@ -20,7 +20,7 @@ import type { Pointer } from './pointer.ts';
 /** One file in a step, with the hunks its block pointers cut from the diff. */
 export interface StepFile {
 	path: string;
-	/** The path at the base commit, which differs from `path` for a renamed file. */
+	/** The path at the merge base, which differs from `path` for a renamed or copied file. */
 	basePath: string;
 	status: FileStatus;
 	blobSha: string;
@@ -113,7 +113,7 @@ export class PullRequestFiles {
 		const [first] = pointers as [Pointer];
 		const changed = this.#changedFile(path, first.field);
 		// GitHub sends no patch for a binary file or for a file renamed without edits.
-		const pureRename = changed.previousPath !== undefined && changed.additions + changed.deletions === 0;
+		const pureRename = changed.basePath !== undefined && changed.additions + changed.deletions === 0;
 		if (changed.patch === undefined && !pureRename) {
 			throw new GuideError(first.field, `GitHub shows no text diff for ${path}, so a line range cannot point into it.`);
 		}

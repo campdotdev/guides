@@ -23,7 +23,7 @@ export function diffCommits(pull: PullRequestRef, comparison: Comparison): DiffC
  */
 export function fileVersions(file: ChangedFile, commits: DiffCommits): { base: FileVersion | null; head: FileVersion | null } {
 	return {
-		base: file.status === 'added' ? null : { path: file.previousPath ?? file.path, commitSha: commits.baseSha },
+		base: file.status === 'added' ? null : { path: file.basePath ?? file.path, commitSha: commits.baseSha },
 		head: file.status === 'removed' ? null : { path: file.path, commitSha: commits.headSha },
 	};
 }

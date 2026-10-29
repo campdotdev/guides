@@ -7,7 +7,7 @@
  * so the file shows unchecked until the reader reviews it again, the way GitHub's Viewed checkbox works.
  * A file that several steps show has one box in each step, and checking any of them checks them all.
  *
- * Every checkbox with `data-reviewed`, `data-path`, and `data-blob-sha` takes part.
+ * Every checkbox with `data-reviewed` and `data-blob-sha` takes part. Its file's path is the `data-file` of the element around it.
  * The page names its pull request in a `data-pull` attribute, such as `campdotdev/shaders#264`.
  * A step block's `data-reviewed-count` element counts the checked boxes inside the step.
  */
@@ -25,7 +25,8 @@ export function reviewedCount(done: number, total: number): { shown: string; spo
 export function initReviewedFiles(): void {
 	const pull = document.querySelector<HTMLElement>('[data-pull]')?.dataset.pull;
 	if (!pull) return;
-	const keyOf = (box: HTMLInputElement) => reviewedKey(pull, box.dataset.path!, box.dataset.blobSha!);
+	const keyOf = (box: HTMLInputElement) =>
+		reviewedKey(pull, box.closest<HTMLElement>('[data-file]')!.dataset.file!, box.dataset.blobSha!);
 	const boxes = () => document.querySelectorAll<HTMLInputElement>('input[data-reviewed]');
 
 	for (const box of boxes()) box.checked = read(keyOf(box));

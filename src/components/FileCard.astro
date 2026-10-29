@@ -18,7 +18,7 @@ const { path, blobSha, id, kind } = Astro.props;
 		<span class="file-path" id={id}>{path}</span>
 		<span class="file-status" id={`${id}-kind`}>{kind}</span>
 		<label class="file-reviewed">
-			<input type="checkbox" data-reviewed data-path={path} data-blob-sha={blobSha} />
+			<input type="checkbox" data-reviewed data-blob-sha={blobSha} />
 			Reviewed<span class="visually-hidden"> {path}</span>
 		</label>
 	</header>
