@@ -25,6 +25,10 @@ const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 	<header class="file-header">
 		<span class="file-path" id={id}>{file.path}</span>
 		<span class="file-status">{file.status}</span>
+		<label class="file-reviewed">
+			<input type="checkbox" data-reviewed data-path={file.path} data-blob-sha={file.blobSha} />
+			Reviewed<span class="visually-hidden"> {file.path}</span>
+		</label>
 	</header>
 	<div class="diff-scroll">
 	<table class="diff" aria-labelledby={id}>
@@ -62,6 +66,12 @@ const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 	</div>
 </div>
 
+<script>
+	import { initReviewedFiles } from '../client/reviewed-files.ts';
+
+	initReviewedFiles();
+</script>
+
 <style>
 	.file {
 		margin-bottom: 12px;
@@ -85,11 +95,26 @@ const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 	}
 
 	.file-path {
+		margin-right: auto;
 		overflow-wrap: anywhere;
 	}
 
 	.file-status {
 		color: var(--muted);
+	}
+
+	.file-reviewed {
+		display: inline-flex;
+		flex: none;
+		gap: 4px;
+		align-items: center;
+		font-family: var(--sans);
+		cursor: pointer;
+	}
+
+	.file-reviewed input {
+		margin: 0;
+		accent-color: var(--accent);
 	}
 
 	.diff-scroll {
