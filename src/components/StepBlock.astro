@@ -12,7 +12,7 @@ const id = `step-${step.number}`;
 const paths = [...step.files, ...step.images].map((file) => file.path);
 const fileCount = `${paths.length} ${paths.length === 1 ? 'file' : 'files'}`;
 // The reviewed-files script fills in the reader's marks when the page loads.
-const noneReviewed = reviewedCount(0, step.files.length);
+const noneReviewed = reviewedCount(0, paths.length);
 ---
 
 <article class="step" id={id} data-step={step.number} aria-labelledby={`${id}-heading`}>
@@ -45,9 +45,12 @@ const noneReviewed = reviewedCount(0, step.files.length);
 </article>
 
 <script>
+	import { initReviewedFiles } from '../client/reviewed-files.ts';
 	import { initStepSelection } from '../client/step-selection.ts';
 
 	initStepSelection();
+	// A step can show only images, so the Reviewed checkboxes load with the step, not with FileDiff.
+	initReviewedFiles();
 </script>
 
 <style>

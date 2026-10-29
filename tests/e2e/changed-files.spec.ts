@@ -113,3 +113,20 @@ test('a block pointer to a deleted image shows only the image before the change'
 	await expect(image.getByRole('img', { name: `${path} before the change` })).toHaveJSProperty('naturalWidth', 624);
 	await expect(image.getByRole('img')).toHaveCount(1);
 });
+
+test('an image file in a step has a Reviewed checkbox, and the step counts it', async ({ page }) => {
+	await page.goto(GUIDE);
+	const title = 'Step 3: Record the default look as a baseline';
+	const step = page.getByRole('article', { name: title });
+	const path = 'apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png';
+	const reviewed = page.getByRole('checkbox', { name: `Reviewed ${path}`, exact: true });
+	await expect(step.getByText('0 of 2 files reviewed', { exact: true })).toBeAttached();
+
+	await page.getByRole('button', { name: title }).click();
+	await reviewed.check();
+	await expect(step.getByText('1 of 2 files reviewed', { exact: true })).toBeAttached();
+
+	await page.reload();
+	await page.getByRole('button', { name: title }).click();
+	await expect(reviewed).toBeChecked();
+});

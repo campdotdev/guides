@@ -17,6 +17,10 @@ const sides = [
 	<header class="file-header">
 		<span class="file-path" id={id}>{image.path}</span>
 		<span class="file-status">{image.status}</span>
+		<label class="file-reviewed">
+			<input type="checkbox" data-reviewed data-path={image.path} data-blob-sha={image.blobSha} />
+			Reviewed<span class="visually-hidden"> {image.path}</span>
+		</label>
 	</header>
 	<div class="image-pair" role="group" aria-labelledby={id}>
 		{
@@ -53,11 +57,26 @@ const sides = [
 	}
 
 	.file-path {
+		margin-right: auto;
 		overflow-wrap: anywhere;
 	}
 
 	.file-status {
 		color: var(--muted);
+	}
+
+	.file-reviewed {
+		display: inline-flex;
+		flex: none;
+		gap: 4px;
+		align-items: center;
+		font-family: var(--sans);
+		cursor: pointer;
+	}
+
+	.file-reviewed input {
+		margin: 0;
+		accent-color: var(--accent);
 	}
 
 	.image-pair {
