@@ -15,7 +15,7 @@ import { parse } from 'yaml';
 import { pullRequestOf, guideFrontmatter } from '../src/guide/schema.ts';
 import { comparePath, filePath } from '../src/repo-files/fixture.ts';
 import { githubRepoFileSource } from '../src/repo-files/github.ts';
-import { DEFAULT_FIXTURE_DIR, diffCommits, fileVersions, type ChangedFile, type FileVersion, type PullRequestRef } from '../src/repo-files/index.ts';
+import { DEFAULT_FIXTURE_DIR, diffCommits, fileVersions, pullRequestName, type ChangedFile, type FileVersion, type PullRequestRef } from '../src/repo-files/index.ts';
 
 const guides = process.argv.slice(2);
 if (guides.length === 0) {
@@ -44,7 +44,7 @@ for (const guide of guides) {
 		if (head) saved += await save(pull, file, head, file.blobSha);
 		if (base) saved += await save(pull, file, base, head ? undefined : file.blobSha);
 	}
-	console.log(`${pull.owner}/${pull.repo}#${pull.pr}: ${comparison.files.length} changed files, ${saved} file versions saved to ${outDir}`);
+	console.log(`${pullRequestName(pull)}: ${comparison.files.length} changed files, ${saved} file versions saved to ${outDir}`);
 }
 
 function readFrontmatter(markdown: string): unknown {

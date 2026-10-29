@@ -9,6 +9,8 @@
  * The page renders an empty `data-stale-banner` status region that names the API URL and the guide's head SHA,
  * and a `data-stale-banner-template` with the banner's text.
  */
+import { shortSha } from '../repo-files/names.ts';
+
 export async function initStaleBanner(): Promise<void> {
 	const region = document.querySelector<HTMLElement>('[data-stale-banner]');
 	const template = document.querySelector<HTMLTemplateElement>('template[data-stale-banner-template]');
@@ -16,7 +18,7 @@ export async function initStaleBanner(): Promise<void> {
 	const head = await currentHead(region.dataset.pullApi!);
 	if (head === null || head === region.dataset.headSha) return;
 	const banner = template.content.cloneNode(true) as DocumentFragment;
-	banner.querySelector('[data-current-head]')!.textContent = head.slice(0, 7);
+	banner.querySelector('[data-current-head]')!.textContent = shortSha(head);
 	region.append(banner);
 }
 

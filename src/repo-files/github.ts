@@ -35,7 +35,7 @@ export function githubRepoFileSource(token: string, fetchImpl: typeof fetch = fe
 
 	return {
 		async compare(pull: PullRequestRef): Promise<Comparison> {
-			const path = `/repos/${pull.owner}/${pull.repo}/compare/${pull.baseSha}...${pull.headSha}`;
+			const path = `/repos/${pull.owner}/${pull.name}/compare/${pull.baseSha}...${pull.headSha}`;
 			const response = await get(path, 'application/vnd.github+json');
 			if (!response.ok) throw await requestError(path, response);
 			const body = (await response.json()) as { merge_base_commit: { sha: string }; files?: DiffEntry[] };
@@ -50,7 +50,7 @@ export function githubRepoFileSource(token: string, fetchImpl: typeof fetch = fe
 
 		async readFile(repo: RepoRef, filePath: string, commitSha: string): Promise<Uint8Array | null> {
 			const encoded = filePath.split('/').map(encodeURIComponent).join('/');
-			const path = `/repos/${repo.owner}/${repo.repo}/contents/${encoded}?ref=${commitSha}`;
+			const path = `/repos/${repo.owner}/${repo.name}/contents/${encoded}?ref=${commitSha}`;
 			const response = await get(path, 'application/vnd.github.raw');
 			if (response.status === 404) return null;
 			if (!response.ok) throw await requestError(path, response);

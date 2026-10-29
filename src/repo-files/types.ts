@@ -1,7 +1,9 @@
 /** A GitHub repository, such as campdotdev/shaders. */
 export interface RepoRef {
+	/** The owner, such as `campdotdev`. */
 	owner: string;
-	repo: string;
+	/** The repository's name, such as `shaders`. */
+	name: string;
 }
 
 /**

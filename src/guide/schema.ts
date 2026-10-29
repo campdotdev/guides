@@ -37,6 +37,6 @@ export const guideFrontmatter = z
 export type GuideFrontmatter = z.infer<typeof guideFrontmatter>;
 
 export function pullRequestOf(frontmatter: GuideFrontmatter): PullRequestRef {
-	const [owner, repo] = frontmatter.repo.split('/') as [string, string];
-	return { owner, repo, pr: frontmatter.pr, baseSha: frontmatter.baseSha, headSha: frontmatter.headSha };
+	const [owner, name] = frontmatter.repo.split('/') as [string, string];
+	return { owner, name, pr: frontmatter.pr, baseSha: frontmatter.baseSha, headSha: frontmatter.headSha };
 }

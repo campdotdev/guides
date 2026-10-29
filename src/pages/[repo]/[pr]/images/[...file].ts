@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import { imageFileParam, imageType, isImagePath } from '../../../../guide/images.ts';
 import { guideParams } from '../../../../guide/catalog.ts';
 import { pullRequestOf } from '../../../../guide/schema.ts';
-import { diffCommits, fileVersions, repoFileSource } from '../../../../repo-files/index.ts';
+import { diffCommits, fileVersions, pullRequestName, repoFileSource } from '../../../../repo-files/index.ts';
 
 /**
  * Writes each changed image of each guide's pull request into the build, at the merge base and the head commit where
@@ -37,7 +37,7 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 export const GET: APIRoute<Props> = async ({ props: { pull, version } }) => {
 	const bytes = await repoFileSource().readFile(pull, version.path, version.commitSha);
 	if (bytes === null) {
-		throw new Error(`${version.path} is missing at ${version.commitSha}, but ${pull.owner}/${pull.repo}#${pull.pr} lists it as changed.`);
+		throw new Error(`${version.path} is missing at ${version.commitSha}, but ${pullRequestName(pull)} lists it as changed.`);
 	}
 	// The copy is backed by an ArrayBuffer, which is the only kind of buffer Response's types accept.
 	return new Response(bytes.slice(), { headers: { 'Content-Type': imageType(version.path)! } });

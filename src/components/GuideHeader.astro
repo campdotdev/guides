@@ -1,6 +1,7 @@
 ---
 import { guideParams, homeUrl, repoUrl } from '../guide/catalog.ts';
-import type { GuideFrontmatter } from '../guide/schema.ts';
+import { pullRequestOf, type GuideFrontmatter } from '../guide/schema.ts';
+import { pullRequestName, shortSha } from '../repo-files/names.ts';
 import Breadcrumb from './Breadcrumb.astro';
 
 interface Props {
@@ -17,12 +18,12 @@ const trail = [
 <header class="guide-header">
 	<Breadcrumb links={trail} />
 	<p class="guide-source">
-		<a href={`${github}/pull/${meta.pr}`}>{meta.repo}#{meta.pr}</a>
+		<a href={`${github}/pull/${meta.pr}`}>{pullRequestName(pullRequestOf(meta))}</a>
 		{meta.scope && <span class="guide-scope">{meta.scope}</span>}
 	</p>
 	<h1>{meta.title}</h1>
 	<p class="guide-commit">
-		Describes commit <a href={`${github}/commit/${meta.headSha}`}><code>{meta.headSha.slice(0, 7)}</code></a>
+		Describes commit <a href={`${github}/commit/${meta.headSha}`}><code>{shortSha(meta.headSha)}</code></a>
 	</p>
 	{meta.afterTheFact && <p class="guide-note">Written after the fact from the diff, without the session’s reasoning.</p>}
 	<div
@@ -36,7 +37,7 @@ const trail = [
 		{/* Astro drops a line break between text and a tag, so each line breaks inside a run of text. */}
 		<p class="stale-banner">
 			<strong>The pull request has changed since this guide was written.</strong> The guide describes
-			commit <code>{meta.headSha.slice(0, 7)}</code>, and the pull request’s head is
+			commit <code>{shortSha(meta.headSha)}</code>, and the pull request’s head is
 			now <code data-current-head></code>. <a href={`${github}/pull/${meta.pr}`}>View the pull request on GitHub</a>
 		</p>
 	</template>

@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 import { sitePath } from '../site.ts';
-import type { GuideFrontmatter } from './schema.ts';
+import { pullRequestOf, type GuideFrontmatter } from './schema.ts';
 
 /** One repo's guides, for the home page and the repo's page. */
 export interface RepoGuides {
@@ -42,7 +42,7 @@ export function repoUrl(slug: string): string {
 
 /** The route of a guide page: `/<repo>/<pr>/`. */
 export function guideParams(meta: GuideFrontmatter): { repo: string; pr: string } {
-	return { repo: meta.repo.split('/')[1]!, pr: String(meta.pr) };
+	return { repo: pullRequestOf(meta).name, pr: String(meta.pr) };
 }
 
 /** The URL of a guide's page, such as `/guides/shaders/264/`. */

@@ -1,5 +1,7 @@
 ---
 import type { Guide } from '../guide/load.ts';
+import { pullRequestOf } from '../guide/schema.ts';
+import { pullRequestName } from '../repo-files/names.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AlsoChanged from './AlsoChanged.astro';
 import GuideHeader from './GuideHeader.astro';
@@ -24,7 +26,7 @@ const { guide } = Astro.props;
 		</style>
 	</noscript>
 	<GuideHeader meta={guide.meta} />
-	<main class="guide" data-pull={`${guide.meta.repo}#${guide.meta.pr}`}>
+	<main class="guide" data-pull={pullRequestName(pullRequestOf(guide.meta))}>
 		<section class="steps-pane" aria-label="Steps" data-pane="steps">
 			{guide.steps.map((step) => <StepBlock step={step} />)}
 			<AlsoChanged files={guide.alsoChanged} />

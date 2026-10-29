@@ -1,7 +1,8 @@
 import { glob, type Loader } from 'astro/loaders';
 import { GuideError, guideFile, inGuide } from './errors.ts';
 import { parseGuide } from './parse.ts';
-import type { GuideFrontmatter } from './schema.ts';
+import { pullRequestName } from '../repo-files/names.ts';
+import { pullRequestOf, type GuideFrontmatter } from './schema.ts';
 
 /**
  * Loads guide files from `base`, where each guide sits at `<repo>/<pr>.md`, such as `shaders/264.md`.
@@ -33,12 +34,12 @@ export function guideLoader(base: string): Loader {
 }
 
 function checkPlace(id: string, frontmatter: GuideFrontmatter): void {
-	const repoName = frontmatter.repo.split('/')[1];
-	const expected = `${repoName}/${frontmatter.pr}`;
+	const pull = pullRequestOf(frontmatter);
+	const expected = `${pull.name}/${pull.pr}`;
 	if (id !== expected) {
 		throw new GuideError(
 			'pr',
-			`a guide to ${frontmatter.repo}#${frontmatter.pr} belongs at ${guideFile(expected)}, not ${guideFile(id)}.`,
+			`a guide to ${pullRequestName(pull)} belongs at ${guideFile(expected)}, not ${guideFile(id)}.`,
 		);
 	}
 }

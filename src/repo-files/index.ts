@@ -4,6 +4,7 @@ import { githubRepoFileSource } from './github.ts';
 import type { RepoFileSource } from './types.ts';
 
 export type { ChangedFile, Comparison, FileStatus, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
+export { pullRequestName, shortSha } from './names.ts';
 export { diffCommits, fileVersions, type DiffCommits, type FileVersion } from './versions.ts';
 
 /** The snapshot the fixture source reads when `REPO_FILE_FIXTURES` is unset. */

@@ -1,6 +1,7 @@
 import {
 	diffCommits,
 	fileVersions,
+	pullRequestName,
 	type ChangedFile,
 	type DiffCommits,
 	type FileStatus,
@@ -158,6 +159,6 @@ export class PullRequestFiles {
 	}
 
 	#name(): string {
-		return `${this.pull.owner}/${this.pull.repo}#${this.pull.pr}`;
+		return pullRequestName(this.pull);
 	}
 }
