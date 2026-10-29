@@ -2,7 +2,7 @@ import type { DiffRow, Hunk } from './patch.ts';
 import type { LineRange } from './pointer.ts';
 
 /** How many lines a block pointer shows on each side of its range. */
-export const CONTEXT_LINES = 3;
+const CONTEXT_LINES = 3;
 
 /**
  * The commit whose line numbers a pointer uses. Pointers count lines at the head commit,
@@ -24,24 +24,24 @@ export function linesOn(hunk: Hunk, side: Side): LineRange {
 }
 
 /** True when the range touches the lines the hunk covers on `side`. */
-export function touches(hunk: Hunk, range: LineRange, side: Side = 'head'): boolean {
+export function touches(hunk: Hunk, range: LineRange, side: Side): boolean {
 	const covered = linesOn(hunk, side);
 	return range.start <= covered.end && range.end >= covered.start;
 }
 
 /**
  * Cuts the rows that a file's block pointers show out of GitHub's hunks.
- * Each pointer keeps the rows from `context` lines before its range to `context` lines after it,
+ * Each pointer keeps the rows from three lines before its range to three lines after it,
  * plus any rows from the other side in between. Pointers whose rows meet or overlap share one hunk.
  */
-export function cutHunks(hunks: Hunk[], ranges: LineRange[], side: Side = 'head', context = CONTEXT_LINES): Hunk[] {
+export function cutHunks(hunks: Hunk[], ranges: LineRange[], side: Side): Hunk[] {
 	const cut: Hunk[] = [];
 	for (const hunk of hunks) {
 		const keep = hunk.rows.map(() => false);
 		for (const range of ranges) {
 			const inWindow = hunk.rows.flatMap((row, index) => {
 				const line = lineOn(row, side);
-				return line !== null && line >= range.start - context && line <= range.end + context ? [index] : [];
+				return line !== null && line >= range.start - CONTEXT_LINES && line <= range.end + CONTEXT_LINES ? [index] : [];
 			});
 			if (inWindow.length === 0) continue;
 			keep.fill(true, inWindow[0], inWindow.at(-1)! + 1);

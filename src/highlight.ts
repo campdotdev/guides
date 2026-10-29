@@ -3,7 +3,7 @@ import { bundledLanguages, codeToTokens, type BundledLanguage, type ThemedToken 
 const THEMES = { light: 'github-light', dark: 'github-dark' } as const;
 
 /** Shiki's language for a path, picked by its extension. Unknown extensions render as plain text. */
-export function languageOf(path: string): BundledLanguage | 'text' {
+function languageOf(path: string): BundledLanguage | 'text' {
 	const extension = path.split('/').at(-1)!.split('.').at(-1)!.toLowerCase();
 	return extension in bundledLanguages ? (extension as BundledLanguage) : 'text';
 }

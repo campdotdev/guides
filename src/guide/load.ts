@@ -1,5 +1,5 @@
 import type { CollectionEntry } from 'astro:content';
-import { repoFileSource, type ChangedFile, type RepoFileSource } from '../repo-files/index.ts';
+import { repoFileSource } from '../repo-files/index.ts';
 import type { AlsoChangedFile } from './also-changed.ts';
 import { guideUrl } from './catalog.ts';
 import { inGuide } from './errors.ts';
@@ -15,8 +15,6 @@ export interface Guide {
 	meta: GuideFrontmatter;
 	overview: { key: OverviewKey; heading: string; html: Html }[];
 	steps: Step[];
-	/** Every file the pull request changes, whether or not a step points at it. */
-	changedFiles: ChangedFile[];
 	/** The changed files that no block pointer names, which the page lists after the last step. */
 	alsoChanged: AlsoChangedFile[];
 }
@@ -38,15 +36,12 @@ export interface Step {
  * Builds the page model for one guide entry: parses the body, renders the prose, and resolves
  * each block pointer to hunks from the repo file source. A bad pointer fails the build here.
  */
-export async function loadGuide(
-	entry: CollectionEntry<'guides'>,
-	source: RepoFileSource = repoFileSource(),
-): Promise<Guide> {
+export async function loadGuide(entry: CollectionEntry<'guides'>): Promise<Guide> {
 	const meta = entry.data;
 	return inGuide(entry.id, async () => {
 		const parsed = parseGuide(entry.body ?? '');
 		const pull = pullRequestOf(meta);
-		const files = await PullRequestFiles.load(pull, source);
+		const files = await PullRequestFiles.load(pull, repoFileSource());
 		const context = { repo: meta.repo, headSha: meta.headSha, mergeBaseSha: files.diff.baseSha };
 		const pageUrl = guideUrl(meta);
 		const steps = await Promise.all(
@@ -68,7 +63,6 @@ export async function loadGuide(
 			meta,
 			overview: OVERVIEW_PARTS.map((part) => ({ ...part, html: renderProse(parsed.overview[part.key], context) })),
 			steps,
-			changedFiles: files.changed,
 			alsoChanged: files.alsoChanged(parsed.steps, pageUrl),
 		};
 	});

@@ -21,9 +21,9 @@ interface DiffEntry {
  * The PR's own files endpoint always follows the PR's current head instead.
  * Compare diffs the head against the merge base of the two commits, so the source returns that commit too.
  */
-export function githubRepoFileSource(token: string, fetchImpl: typeof fetch = fetch): RepoFileSource {
+export function githubRepoFileSource(token: string): RepoFileSource {
 	async function get(path: string, accept: string): Promise<Response> {
-		return fetchImpl(`${API}${path}`, {
+		return fetch(`${API}${path}`, {
 			headers: {
 				Accept: accept,
 				Authorization: `Bearer ${token}`,

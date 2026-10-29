@@ -13,7 +13,7 @@
  */
 
 /** The local storage key for one file's mark. */
-export function reviewedKey(pull: string, path: string, blobSha: string): string {
+function reviewedKey(pull: string, path: string, blobSha: string): string {
 	return `guides:reviewed:${pull}:${path}@${blobSha}`;
 }
 

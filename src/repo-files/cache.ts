@@ -12,13 +12,13 @@ import type { Comparison, PullRequestRef, RepoFileSource, RepoRef } from './type
  *
  * Each read that misses the cache logs one line, so the build log lists every request the build made.
  */
-export function cachedRepoFileSource(source: RepoFileSource, dir: string, log: (line: string) => void = console.log): RepoFileSource {
+export function cachedRepoFileSource(source: RepoFileSource, dir: string): RepoFileSource {
 	return {
 		async compare(pull: PullRequestRef): Promise<Comparison> {
 			const path = comparePath(dir, pull);
 			const cached = await readSnapshotFile(path);
 			if (cached) return JSON.parse(new TextDecoder().decode(cached)) as Comparison;
-			log(`Fetched the files that ${pullRequestName(pull)} changes`);
+			console.log(`Fetched the files that ${pullRequestName(pull)} changes`);
 			const comparison = await source.compare(pull);
 			await writeCached(path, `${JSON.stringify(comparison, null, '\t')}\n`);
 			return comparison;
@@ -28,7 +28,7 @@ export function cachedRepoFileSource(source: RepoFileSource, dir: string, log: (
 			const cachePath = filePath(dir, repo, path, commitSha);
 			const cached = await readSnapshotFile(cachePath);
 			if (cached) return cached;
-			log(`Fetched ${repo.owner}/${repo.name} ${path} at ${shortSha(commitSha)}`);
+			console.log(`Fetched ${repo.owner}/${repo.name} ${path} at ${shortSha(commitSha)}`);
 			const bytes = await source.readFile(repo, path, commitSha);
 			// The cache keeps no record of a missing path. The renderer reads only paths that the file list names.
 			if (bytes !== null) await writeCached(cachePath, bytes);
