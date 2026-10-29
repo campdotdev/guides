@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { comparePath, filePath } from './fixture.ts';
+import { comparePath, filePath, readSnapshotFile } from './fixture.ts';
 import type { Comparison, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
 
 /**
@@ -15,7 +15,7 @@ export function cachedRepoFileSource(source: RepoFileSource, dir: string, log: (
 	return {
 		async compare(pull: PullRequestRef): Promise<Comparison> {
 			const path = comparePath(dir, pull);
-			const cached = await readCached(path);
+			const cached = await readSnapshotFile(path);
 			if (cached) return JSON.parse(new TextDecoder().decode(cached)) as Comparison;
 			log(`Fetched the files that ${pull.owner}/${pull.repo}#${pull.pr} changes`);
 			const comparison = await source.compare(pull);
@@ -25,7 +25,7 @@ export function cachedRepoFileSource(source: RepoFileSource, dir: string, log: (
 
 		async readFile(repo: RepoRef, path: string, commitSha: string): Promise<Uint8Array | null> {
 			const cachePath = filePath(dir, repo, path, commitSha);
-			const cached = await readCached(cachePath);
+			const cached = await readSnapshotFile(cachePath);
 			if (cached) return cached;
 			log(`Fetched ${repo.owner}/${repo.repo} ${path} at ${commitSha.slice(0, 7)}`);
 			const bytes = await source.readFile(repo, path, commitSha);
@@ -34,15 +34,6 @@ export function cachedRepoFileSource(source: RepoFileSource, dir: string, log: (
 			return bytes;
 		},
 	};
-}
-
-async function readCached(path: string): Promise<Uint8Array | null> {
-	try {
-		return new Uint8Array(await readFile(path));
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
-		throw error;
-	}
 }
 
 /** Writes through a temporary file, so a build that stops partway never leaves a truncated entry. */

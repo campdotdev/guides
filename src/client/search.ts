@@ -3,6 +3,7 @@
  * The index holds only elements marked `data-pagefind-body`, which on a guide page is the prose.
  * `astro dev` serves no index, so search works only on a built site.
  */
+import { sitePath } from '../site.ts';
 
 /** The parts of a Pagefind result that the list shows. */
 interface PagefindResultData {
@@ -20,7 +21,7 @@ interface Pagefind {
 /** How many results the list shows. Pagefind fetches each shown result's data separately. */
 const MAX_SHOWN = 20;
 
-const BUNDLE = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/pagefind/pagefind.js`;
+const BUNDLE = sitePath('pagefind/pagefind.js');
 
 let pagefind: Promise<Pagefind> | undefined;
 

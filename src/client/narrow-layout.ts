@@ -7,6 +7,8 @@
  * reading order the same as the order on screen. When the screen widens, the elements move back.
  */
 
+import { controlledElement } from './controls.ts';
+
 /** The same width as the `@media` query in GuidePage.astro. */
 const NARROW = '(width < 800px)';
 
@@ -24,7 +26,7 @@ export function initNarrowLayout(): void {
 		stepsPane.before(explanationPane);
 		for (const explanation of explanations) {
 			const toggle = stepsPane.querySelector(`[data-step="${explanation.dataset.explains}"] [data-step-toggle]`);
-			document.getElementById(toggle?.getAttribute('aria-controls') ?? '')?.before(explanation);
+			controlledElement(toggle)?.before(explanation);
 		}
 		hideHeadings(true);
 	};

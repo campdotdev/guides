@@ -1,7 +1,7 @@
 import type { APIRoute, GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getCollection } from 'astro:content';
 import { imageFileParam, imageType, isImagePath } from '../../../../guide/images.ts';
-import { guideParams } from '../../../../guide/load.ts';
+import { guideParams } from '../../../../guide/catalog.ts';
 import { pullRequestOf } from '../../../../guide/schema.ts';
 import { diffCommits, fileVersions, repoFileSource } from '../../../../repo-files/index.ts';
 

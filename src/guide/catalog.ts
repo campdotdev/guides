@@ -1,5 +1,5 @@
 import type { CollectionEntry } from 'astro:content';
-import { guideParams } from './load.ts';
+import { sitePath } from '../site.ts';
 import type { GuideFrontmatter } from './schema.ts';
 
 /** One repo's guides, for the home page and the repo's page. */
@@ -30,20 +30,23 @@ export function guidesByRepo(entries: CollectionEntry<'guides'>[]): RepoGuides[]
 	return [...repos.values()].sort((a, b) => a.repo.localeCompare(b.repo));
 }
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
-
 /** The URL of the home page, `/guides/`. */
 export function homeUrl(): string {
-	return `${BASE}/`;
+	return sitePath('');
 }
 
 /** The URL of a repo's page, such as `/guides/shaders/`. */
 export function repoUrl(slug: string): string {
-	return `${BASE}/${slug}/`;
+	return sitePath(`${slug}/`);
+}
+
+/** The route of a guide page: `/<repo>/<pr>/`. */
+export function guideParams(meta: GuideFrontmatter): { repo: string; pr: string } {
+	return { repo: meta.repo.split('/')[1]!, pr: String(meta.pr) };
 }
 
 /** The URL of a guide's page, such as `/guides/shaders/264/`. */
 export function guideUrl(meta: GuideFrontmatter): string {
 	const { repo, pr } = guideParams(meta);
-	return `${BASE}/${repo}/${pr}/`;
+	return sitePath(`${repo}/${pr}/`);
 }

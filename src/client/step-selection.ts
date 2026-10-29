@@ -6,6 +6,8 @@
  * `STEP_SELECTED` event, so a click, a key, and a link all select a step the same way.
  */
 
+import { controlledElement } from './controls.ts';
+
 /** Fired on `document` after the selected step changes. */
 export const STEP_SELECTED = 'guide:step-selected';
 
@@ -27,7 +29,7 @@ export function selectStep(step: number | null): void {
 		block.toggleAttribute('data-selected', selected);
 		const toggle = block.querySelector<HTMLElement>('[data-step-toggle]');
 		toggle?.setAttribute('aria-expanded', String(selected));
-		const code = document.getElementById(toggle?.getAttribute('aria-controls') ?? '');
+		const code = controlledElement(toggle);
 		if (code) code.hidden = !selected;
 	}
 	const explains = step === null ? 'overview' : String(step);

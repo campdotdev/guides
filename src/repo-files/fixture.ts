@@ -30,12 +30,17 @@ export function fixtureRepoFileSource(dir: string): RepoFileSource {
 		},
 
 		async readFile(repo: RepoRef, path: string, commitSha: string): Promise<Uint8Array | null> {
-			try {
-				return new Uint8Array(await readFile(filePath(dir, repo, path, commitSha)));
-			} catch (error) {
-				if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
-				throw error;
-			}
+			return readSnapshotFile(filePath(dir, repo, path, commitSha));
 		},
 	};
+}
+
+/** The bytes of a file in a snapshot, or null when the snapshot has no file at `path`. */
+export async function readSnapshotFile(path: string): Promise<Uint8Array | null> {
+	try {
+		return new Uint8Array(await readFile(path));
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+		throw error;
+	}
 }

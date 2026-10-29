@@ -1,6 +1,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { repoFileSource, type ChangedFile, type RepoFileSource } from '../repo-files/index.ts';
 import { alsoChanged, type AlsoChangedFile } from './also-changed.ts';
+import { guideUrl } from './catalog.ts';
 import { inGuide } from './errors.ts';
 import { stepImages, type StepImage } from './images.ts';
 import { renderStepProse } from './inline-pointers.ts';
@@ -71,15 +72,4 @@ export async function loadGuide(
 			alsoChanged: alsoChanged(parsed.steps, files, pageUrl),
 		};
 	});
-}
-
-/** The route of a guide page: `/<repo>/<pr>/`. */
-export function guideParams(meta: GuideFrontmatter): { repo: string; pr: string } {
-	return { repo: meta.repo.split('/')[1]!, pr: String(meta.pr) };
-}
-
-/** The URL of a guide page, with the site's base path and a trailing slash, such as `/guides/shaders/264/`. */
-function guideUrl(meta: GuideFrontmatter): string {
-	const { repo, pr } = guideParams(meta);
-	return `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${repo}/${pr}/`;
 }

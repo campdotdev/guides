@@ -1,9 +1,11 @@
+import { controlledElement } from './controls.ts';
+
 /**
  * Scope filter: hides the guides in a repo's list whose Conventional Commit scope differs from the chosen one.
  * The select names its list in `aria-controls`, and each list item carries its guide's scope in `data-scope`.
  */
 export function initScopeFilter(select: HTMLSelectElement): void {
-	const list = document.getElementById(select.getAttribute('aria-controls') ?? '');
+	const list = controlledElement(select);
 	if (!list) return;
 
 	function apply(): void {
