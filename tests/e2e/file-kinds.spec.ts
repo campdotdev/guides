@@ -67,3 +67,13 @@ test('a pointer into a file renamed without edits shows its lines as unchanged',
 	await expect(glossary.getByRole('row', { name: /^\d+ (added|removed)( |$)/ })).toHaveCount(0);
 	await expect(glossary.getByRole('button', { name: '79 unchanged lines' })).toBeVisible();
 });
+
+test('the format reference says how pointers behave in new, deleted, and renamed files', async ({ page }) => {
+	await page.goto('/guides/format/');
+
+	await expect(page.getByRole('heading', { level: 2, name: 'New, deleted, and renamed files' })).toBeVisible();
+	const kinds = page.getByRole('table').filter({ has: page.getByRole('columnheader', { name: 'Line numbers' }) });
+	for (const kind of ['New', 'Deleted', 'Renamed', 'Renamed without edits']) {
+		await expect(kinds.getByRole('cell', { name: kind, exact: true })).toBeVisible();
+	}
+});

@@ -66,3 +66,13 @@ test('a pointer range that spans two hunks shows both, with a separator between 
 	await expect(component.getByRole('row', { name: '58 79 speed = 0.45,' })).toBeVisible();
 	await expect(component.getByRole('row', { name: '67 88 center={center}' })).toBeVisible();
 });
+
+test('the format reference explains what each separator hides', async ({ page }) => {
+	await page.goto('/guides/format/');
+
+	await expect(page.getByRole('heading', { level: 2, name: 'Separators' })).toBeVisible();
+	const separators = page.getByRole('table').filter({ has: page.getByRole('columnheader', { name: 'Separator' }) });
+	for (const label of ['12 unchanged lines', '87 more added lines', '60 more removed lines', '73 more lines, 24 changed']) {
+		await expect(separators.getByRole('cell', { name: label, exact: true })).toBeVisible();
+	}
+});
