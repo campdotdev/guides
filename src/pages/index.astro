@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import GuideSearch from '../components/GuideSearch.astro';
 import { guidesByRepo, repoUrl } from '../guide/catalog.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -10,6 +11,7 @@ const repos = guidesByRepo(await getCollection('guides'));
 	<main class="doc">
 		<h1>Guides</h1>
 		<p>Step-by-step guides to campdotdev pull requests, written by the agent that wrote each one.</p>
+		<GuideSearch />
 		<h2 id="repositories">Repositories</h2>
 		<ul aria-labelledby="repositories">
 			{
