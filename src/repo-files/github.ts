@@ -49,12 +49,18 @@ export function githubRepoFileSource(token: string): RepoFileSource {
 		},
 
 		async readFile(repo: RepoRef, filePath: string, commitSha: string): Promise<Uint8Array | null> {
+			// The Contents API serves a symlink's target in place of the link, but its `sha` names the path's own blob.
+			// Read that blob, so a symlink comes back as the link and hashes to the blob SHA that compare lists.
 			const encoded = filePath.split('/').map(encodeURIComponent).join('/');
-			const path = `/repos/${repo.owner}/${repo.name}/contents/${encoded}?ref=${commitSha}`;
-			const response = await get(path, 'application/vnd.github.raw');
-			if (response.status === 404) return null;
-			if (!response.ok) throw await requestError(path, response);
-			return new Uint8Array(await response.arrayBuffer());
+			const contentsPath = `/repos/${repo.owner}/${repo.name}/contents/${encoded}?ref=${commitSha}`;
+			const contents = await get(contentsPath, 'application/vnd.github.object');
+			if (contents.status === 404) return null;
+			if (!contents.ok) throw await requestError(contentsPath, contents);
+			const { sha } = (await contents.json()) as { sha: string };
+			const blobPath = `/repos/${repo.owner}/${repo.name}/git/blobs/${sha}`;
+			const blob = await get(blobPath, 'application/vnd.github.raw');
+			if (!blob.ok) throw await requestError(blobPath, blob);
+			return new Uint8Array(await blob.arrayBuffer());
 		},
 	};
 }
