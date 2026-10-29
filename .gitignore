@@ -4,4 +4,4 @@ dist/
 test-results/
 playwright-report/
 # The deploy workflow checks out the content branch here.
-content/
+/content/

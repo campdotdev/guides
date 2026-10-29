@@ -47,6 +47,8 @@ GUIDES_DIR=content REPO_FILE_SOURCE=github GITHUB_TOKEN=$(gh auth token) pnpm bu
 
 The specs in `tests/e2e` drive the built site in Chromium and assert through roles and accessible names. They read the fixture guides in `tests/fixtures/guides`, which the test suite owns, so the sample guide on `content` can change without breaking them. The search specs query the real Pagefind index that the build writes. Each guide in `tests/fixtures/malformed` must fail the build with an error that names the bad field.
 
+`tests/fixtures/previous-head` holds the same guide pinned to the pull request's previous head, `f09b489`. `reviewed-files.spec.ts` serves a build of it, marks files as reviewed, and then reloads into the main build, the way a guide refresh replaces the page.
+
 The `fixture` source serves each fixture guide's files from `tests/fixtures/repo-files`, a snapshot of the pull request at its base and head commits. The tests never touch the network. To record the snapshot for a new fixture guide, run:
 
 ```sh

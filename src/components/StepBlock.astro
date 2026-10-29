@@ -1,4 +1,5 @@
 ---
+import { reviewedCount } from '../client/reviewed-files.ts';
 import type { Step } from '../guide/load.ts';
 import FileDiff from './FileDiff.astro';
 import ImageDiff from './ImageDiff.astro';
@@ -10,6 +11,8 @@ const { step } = Astro.props;
 const id = `step-${step.number}`;
 const paths = [...step.files, ...step.images].map((file) => file.path);
 const fileCount = `${paths.length} ${paths.length === 1 ? 'file' : 'files'}`;
+// The reviewed-files script fills in the reader's marks when the page loads.
+const noneReviewed = reviewedCount(0, step.files.length);
 ---
 
 <article class="step" id={id} data-step={step.number} aria-labelledby={`${id}-heading`}>
@@ -26,6 +29,10 @@ const fileCount = `${paths.length} ${paths.length === 1 ? 'file' : 'files'}`;
 				<span class="deletions">-{step.deletions}</span>
 			</span>
 			<span class="visually-hidden">{step.additions} lines added, {step.deletions} removed</span>
+			<span data-reviewed-count>
+				<span aria-hidden="true">{noneReviewed.shown}</span>
+				<span class="visually-hidden">{noneReviewed.spoken}</span>
+			</span>
 		</p>
 		<ul class="step-files">
 			{paths.map((path) => <li>{path}</li>)}

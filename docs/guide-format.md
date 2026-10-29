@@ -17,7 +17,7 @@ Markdown files at the top level of the branch, such as `README.md`, are not guid
 | `title` | string | Yes | The pull request title, which is a Conventional Commit. The page shows it as its heading. |
 | `scope` | string | No | The Conventional Commit scope of the title. The repo's page can filter its guides by scope. |
 | `baseSha` | commit SHA | Yes | The commit the pull request is based on. |
-| `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. |
+| `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. When the pull request's head differs from it, the page shows a banner that names this commit and links to the pull request. |
 | `afterTheFact` | boolean | No | `true` when the guide was written from the diff after the session ended. The page then says it lacks the session's reasoning. Defaults to `false`. |
 
 A commit SHA is the full 40-character lowercase hex SHA. A field the table does not list fails the build.

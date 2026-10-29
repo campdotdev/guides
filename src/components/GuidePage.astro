@@ -24,7 +24,7 @@ const { guide } = Astro.props;
 		</style>
 	</noscript>
 	<GuideHeader meta={guide.meta} />
-	<main class="guide">
+	<main class="guide" data-pull={`${guide.meta.repo}#${guide.meta.pr}`}>
 		<section class="steps-pane" aria-label="Steps">
 			{guide.steps.map((step) => <StepBlock step={step} />)}
 			<AlsoChanged files={guide.alsoChanged} />
