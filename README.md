@@ -28,7 +28,7 @@ To build the published guides, check out `content` into `content/` and read the 
 
 ```sh
 git worktree add content content
-GUIDES_DIR=content REPO_FILE_SOURCE=github GITHUB_TOKEN=$(gh auth token) pnpm build
+GUIDES_DIR=content REPO_FILE_SOURCE=github REPO_FILE_CACHE=.cache/repo-files GITHUB_TOKEN=$(gh auth token) pnpm build
 ```
 
 ## Environment variables
@@ -39,6 +39,7 @@ GUIDES_DIR=content REPO_FILE_SOURCE=github GITHUB_TOKEN=$(gh auth token) pnpm bu
 | `REPO_FILE_SOURCE` | `fixture` | Where the build reads the pull requests' files. `github` reads the GitHub API, and `fixture` reads a recorded snapshot. |
 | `GITHUB_TOKEN` | None | The token the `github` source sends. `REPO_FILE_SOURCE=github` requires it. |
 | `REPO_FILE_FIXTURES` | `tests/fixtures/repo-files` | The snapshot the `fixture` source reads. |
+| `REPO_FILE_CACHE` | None | A directory where the build caches the files it reads from the source, by commit SHA. A later build reads them from there instead of fetching them again. The build logs each file it fetches. |
 | `PLAYWRIGHT_PORT` | `4321` | The port that `pnpm test` serves the build on. |
 
 ## Tests
@@ -67,7 +68,7 @@ A malformed guide on `content` fails the deploy build, and the site keeps its la
 | --- | --- |
 | `src/content.config.ts` | The `guides` collection, read from `GUIDES_DIR`. |
 | `src/guide/` | The guide model. It parses and validates a guide file and resolves its pointers to diff hunks. Components never parse Markdown. |
-| `src/repo-files/` | The repo file source: its interface, the `github` and `fixture` sources, and the switch between them. |
+| `src/repo-files/` | The repo file source: its interface, the `github` and `fixture` sources, the cache, and the switch between them. |
 | `src/components/` | The page components. |
 | `src/client/` | Browser behavior, one module per feature. |
 | `src/highlight.ts` | Syntax highlighting with Shiki, one token list per line. |

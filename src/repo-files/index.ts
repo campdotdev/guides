@@ -1,3 +1,4 @@
+import { cachedRepoFileSource } from './cache.ts';
 import { fixtureRepoFileSource } from './fixture.ts';
 import { githubRepoFileSource } from './github.ts';
 import type { RepoFileSource } from './types.ts';
@@ -10,8 +11,14 @@ export const DEFAULT_FIXTURE_DIR = 'tests/fixtures/repo-files';
 /**
  * Picks the repo file source from `REPO_FILE_SOURCE`:
  * `github` reads the GitHub API with `GITHUB_TOKEN`, and `fixture` (the default) reads `REPO_FILE_FIXTURES`.
+ * When `REPO_FILE_CACHE` names a directory, the source caches every file it reads there.
  */
 export function repoFileSource(env: NodeJS.ProcessEnv = process.env): RepoFileSource {
+	const source = uncachedSource(env);
+	return env.REPO_FILE_CACHE ? cachedRepoFileSource(source, env.REPO_FILE_CACHE) : source;
+}
+
+function uncachedSource(env: NodeJS.ProcessEnv): RepoFileSource {
 	const kind = env.REPO_FILE_SOURCE ?? 'fixture';
 	if (kind === 'fixture') return fixtureRepoFileSource(env.REPO_FILE_FIXTURES ?? DEFAULT_FIXTURE_DIR);
 	if (kind === 'github') {
