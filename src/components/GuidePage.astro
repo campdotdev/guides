@@ -1,6 +1,7 @@
 ---
 import type { Guide } from '../guide/load.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import AlsoChanged from './AlsoChanged.astro';
 import GuideHeader from './GuideHeader.astro';
 import Overview from './Overview.astro';
 import StepBlock from './StepBlock.astro';
@@ -26,6 +27,7 @@ const { guide } = Astro.props;
 	<main class="guide">
 		<section class="steps-pane" aria-label="Steps">
 			{guide.steps.map((step) => <StepBlock step={step} />)}
+			<AlsoChanged files={guide.alsoChanged} />
 		</section>
 		<section class="explanation-pane" aria-label="Explanation">
 			<Overview overview={guide.overview} />

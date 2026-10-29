@@ -1,5 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 import { repoFileSource, type ChangedFile, type RepoFileSource } from '../repo-files/index.ts';
+import { alsoChanged, type AlsoChangedFile } from './also-changed.ts';
 import { inGuide } from './errors.ts';
 import { OVERVIEW_PARTS, parseGuide, type OverviewKey } from './parse.ts';
 import { renderProse, type Html } from './prose.ts';
@@ -13,6 +14,8 @@ export interface Guide {
 	steps: Step[];
 	/** Every file the pull request changes, whether or not a step points at it. */
 	changedFiles: ChangedFile[];
+	/** The changed files that no block pointer names, which the page lists after the last step. */
+	alsoChanged: AlsoChangedFile[];
 }
 
 export interface Step {
@@ -37,8 +40,10 @@ export async function loadGuide(
 	const meta = entry.data;
 	return inGuide(entry.id, async () => {
 		const parsed = parseGuide(entry.body ?? '');
-		const files = await PullRequestFiles.load(pullRequestOf(meta), source);
+		const pull = pullRequestOf(meta);
+		const files = await PullRequestFiles.load(pull, source);
 		const context = { repo: meta.repo, headSha: meta.headSha };
+		const pageUrl = guideUrl(meta);
 		const steps = await Promise.all(
 			parsed.steps.map(async (step): Promise<Step> => {
 				const stepFiles = await files.stepFiles(step);
@@ -58,6 +63,7 @@ export async function loadGuide(
 			overview: OVERVIEW_PARTS.map((part) => ({ ...part, html: renderProse(parsed.overview[part.key], context) })),
 			steps,
 			changedFiles: files.changed,
+			alsoChanged: alsoChanged(parsed.steps, files.changed, pull, pageUrl),
 		};
 	});
 }
@@ -65,4 +71,10 @@ export async function loadGuide(
 /** The route of a guide page: `/<repo>/<pr>/`. */
 export function guideParams(meta: GuideFrontmatter): { repo: string; pr: string } {
 	return { repo: meta.repo.split('/')[1]!, pr: String(meta.pr) };
+}
+
+/** The URL of a guide page, with the site's base path and a trailing slash, such as `/guides/shaders/264/`. */
+function guideUrl(meta: GuideFrontmatter): string {
+	const { repo, pr } = guideParams(meta);
+	return `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${repo}/${pr}/`;
 }

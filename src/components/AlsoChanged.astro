@@ -1,0 +1,106 @@
+---
+import type { AlsoChangedFile } from '../guide/also-changed.ts';
+
+interface Props {
+	/** The changed files that no block pointer names. */
+	files: AlsoChangedFile[];
+}
+const { files } = Astro.props;
+---
+
+{
+	files.length > 0 && (
+		<section class="also-changed" aria-labelledby="also-changed-heading">
+			<h2 id="also-changed-heading">Also changed</h2>
+			<p class="also-changed-note">The pull request changes these files too. No step shows them.</p>
+			<ul class="also-changed-files">
+				{files.map((file) => (
+					<li class="also-changed-file">
+						{file.thumbnail && (
+							<img class="thumbnail" src={file.thumbnail.src} alt={file.thumbnail.alt} loading="lazy" decoding="async" />
+						)}
+						<span class="file-path">{file.path}</span>{' '}
+						<span class="file-status">{file.status}</span>{' '}
+						<span class="line-counts" aria-hidden="true">
+							<span class="additions">+{file.additions}</span>
+							<span class="deletions">-{file.deletions}</span>
+						</span>{' '}
+						<span class="visually-hidden">
+							{file.additions} lines added, {file.deletions} removed
+						</span>
+					</li>
+				))}
+			</ul>
+		</section>
+	)
+}
+
+<style>
+	.also-changed {
+		margin-top: 24px;
+	}
+
+	h2 {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	.also-changed-note {
+		margin: 4px 0 8px;
+		color: var(--muted);
+		font-size: 0.8125rem;
+	}
+
+	.also-changed-files {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+	}
+
+	.also-changed-file {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 6px 12px;
+		font: 0.75rem var(--mono);
+	}
+
+	.also-changed-file + .also-changed-file {
+		border-top: 1px solid var(--border);
+	}
+
+	.thumbnail {
+		flex: none;
+		width: 64px;
+		height: 48px;
+		object-fit: contain;
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		background: var(--surface);
+	}
+
+	.file-path {
+		flex: 1;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.file-status {
+		color: var(--muted);
+	}
+
+	.line-counts {
+		display: inline-flex;
+		gap: 6px;
+	}
+
+	.additions {
+		color: var(--add-fg);
+	}
+
+	.deletions {
+		color: var(--del-fg);
+	}
+</style>
