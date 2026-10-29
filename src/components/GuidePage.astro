@@ -27,7 +27,8 @@ const { guide } = Astro.props;
 		<section class="steps-pane" aria-label="Steps" data-pane="steps">
 			{guide.steps.map((step) => <StepBlock step={step} />)}
 		</section>
-		<section class="explanation-pane" aria-label="Explanation" data-pane="explanation">
+		{/* Search indexes the prose in this pane. Pagefind skips pages without data-pagefind-body. */}
+		<section class="explanation-pane" aria-label="Explanation" data-pane="explanation" data-pagefind-body>
 			<Overview overview={guide.overview} />
 			{guide.steps.map((step) => <StepExplanation step={step} />)}
 		</section>

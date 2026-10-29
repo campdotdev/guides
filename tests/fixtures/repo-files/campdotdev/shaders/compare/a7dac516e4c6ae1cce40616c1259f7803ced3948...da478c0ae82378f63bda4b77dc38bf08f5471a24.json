@@ -1,0 +1,18 @@
+[
+	{
+		"path": "apps/docs-tests/docs/homepage.spec.ts",
+		"status": "modified",
+		"blobSha": "25b79d9146735ab14e3ee3ee8ea26e66849b660a",
+		"additions": 0,
+		"deletions": 1,
+		"patch": "@@ -160,7 +160,6 @@ test('each favorite shows its poster', async ({ page }) => {\n           href: link.getAttribute('href') ?? '',\n           src: decodeURIComponent(image?.currentSrc ?? ''),\n           loaded: !!image && image.complete && image.naturalWidth > 0,\n-          // next/image may serve a resized file, which keeps the shape.\n           shape: image ? image.naturalWidth / image.naturalHeight : 0,\n         };\n       }),"
+	},
+	{
+		"path": "apps/docs/src/components/favorites/favorites-list.tsx",
+		"status": "modified",
+		"blobSha": "caa823db6c2d4579d22ff7b36a45094b9c6823fe",
+		"additions": 6,
+		"deletions": 11,
+		"patch": "@@ -28,10 +28,6 @@ import { CardTab } from './card-tab';\n import { favoriteSceneBackdrop, preloadFavoriteScenes, useFavoriteScene } from './favorite-scenes';\n import styles from './favorites.module.css';\n \n-// The width each poster renders at, per the grid's columns in\n-// favorites.module.css, so next/image picks a file no larger than it needs.\n-const POSTER_SIZES = '(width < 40rem) 100vw, (width < 64rem) 50vw, 25vw';\n-\n // A card's place in the grid's reveal (favorites.module.css): the heading\n // goes first, at 0, so the cards count from 1.\n type RevealStyle = CSSProperties & { '--reveal-index': number };\n@@ -163,13 +159,12 @@ function FavoriteCard({\n     >\n       <div className={styles.window}>\n         {sceneMounted && <LiveScene paused={!playing} slug={favorite.slug} />}\n-        <Image\n-          alt={favorite.label}\n-          className={styles.poster}\n-          fill\n-          sizes={POSTER_SIZES}\n-          src={favorite.poster}\n-        />\n+        {/* No `sizes`: next.config.ts turns image optimization off for the\n+            static export, so next/image renders a plain `<img>` with no\n+            srcset for `sizes` to pick from. If optimization comes on, add\n+            `sizes` to match the grid's columns in favorites.module.css. */}\n+        {/* react-doctor-disable-next-line react-doctor/nextjs-image-missing-sizes */}\n+        <Image alt={favorite.label} className={styles.poster} fill src={favorite.poster} />\n         {cardTabMounted && <CardTab shortName={favorite.shortName} shown={engaged} />}\n       </div>\n     </Link>"
+	}
+]
