@@ -1,4 +1,4 @@
-import type { ChangedFile, FileStatus, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
+import type { ChangedFile, Comparison, FileStatus, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
 
 const API = 'https://api.github.com';
 
@@ -19,6 +19,7 @@ interface DiffEntry {
  * Reads files from the GitHub REST API.
  * The file list comes from `compare/{base}...{head}`, which never changes for fixed SHAs.
  * The PR's own files endpoint always follows the PR's current head instead.
+ * Compare diffs the head against the merge base of the two commits, so the source returns that commit too.
  */
 export function githubRepoFileSource(token: string, fetchImpl: typeof fetch = fetch): RepoFileSource {
 	async function get(path: string, accept: string): Promise<Response> {
@@ -33,18 +34,18 @@ export function githubRepoFileSource(token: string, fetchImpl: typeof fetch = fe
 	}
 
 	return {
-		async listChangedFiles(pull: PullRequestRef): Promise<ChangedFile[]> {
+		async compare(pull: PullRequestRef): Promise<Comparison> {
 			const path = `/repos/${pull.owner}/${pull.repo}/compare/${pull.baseSha}...${pull.headSha}`;
 			const response = await get(path, 'application/vnd.github+json');
 			if (!response.ok) throw await requestError(path, response);
-			const body = (await response.json()) as { files?: DiffEntry[] };
+			const body = (await response.json()) as { merge_base_commit: { sha: string }; files?: DiffEntry[] };
 			const files = body.files ?? [];
 			if (files.length >= COMPARE_FILE_CAP) {
 				throw new Error(
 					`${path} lists ${files.length} files, which is GitHub's cap for compare. The guide renderer cannot tell whether files are missing.`,
 				);
 			}
-			return files.map(toChangedFile);
+			return { mergeBaseSha: body.merge_base_commit.sha, files: files.map(toChangedFile) };
 		},
 
 		async readFile(repo: RepoRef, filePath: string, commitSha: string): Promise<Uint8Array | null> {

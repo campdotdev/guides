@@ -3,11 +3,11 @@ import { getCollection } from 'astro:content';
 import { imageFileParam, imageType, isImagePath } from '../../../../guide/images.ts';
 import { guideParams } from '../../../../guide/load.ts';
 import { pullRequestOf } from '../../../../guide/schema.ts';
-import { fileVersions, repoFileSource } from '../../../../repo-files/index.ts';
+import { diffCommits, fileVersions, repoFileSource } from '../../../../repo-files/index.ts';
 
 /**
- * Writes each changed image of each guide's pull request into the build, at the base and head commits where it
- * exists, so the page shows images from its own site: `/<repo>/<pr>/images/<commit>/<path>`.
+ * Writes each changed image of each guide's pull request into the build, at the merge base and the head commit where
+ * it exists, so the page shows images from its own site: `/<repo>/<pr>/images/<commit>/<path>`.
  */
 export const getStaticPaths = (async () => {
 	const source = repoFileSource();
@@ -15,11 +15,12 @@ export const getStaticPaths = (async () => {
 	const routes = await Promise.all(
 		entries.map(async (entry) => {
 			const pull = pullRequestOf(entry.data);
-			const changed = await source.listChangedFiles(pull);
-			return changed
+			const comparison = await source.compare(pull);
+			const diff = diffCommits(pull, comparison);
+			return comparison.files
 				.filter((file) => isImagePath(file.path))
 				.flatMap((file) => {
-					const { base, head } = fileVersions(file, pull);
+					const { base, head } = fileVersions(file, diff);
 					return [base, head].filter((version) => version !== null);
 				})
 				.map((version) => ({

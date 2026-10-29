@@ -97,7 +97,7 @@ test('a block pointer to a changed image shows it before and after the change', 
 	const after = image.getByRole('img', { name: `${path} after the change` });
 	await expect(before).toHaveJSProperty('naturalWidth', 560);
 	await expect(after).toHaveJSProperty('naturalWidth', 560);
-	// GitHub's blob SHAs for the baseline at #235's base and head commits.
+	// GitHub's blob SHAs for the baseline at #235's merge base and head commit.
 	expect(await blobShaOf(page, before)).toBe('1374a86cfbee6729c50480295b10a9a0f48128cc');
 	expect(await blobShaOf(page, after)).toBe('e337458767ddf429a3a0f8ddfe0e4d3a2c8e60e1');
 });

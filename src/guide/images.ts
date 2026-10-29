@@ -1,6 +1,7 @@
-import { fileVersions, type ChangedFile, type FileStatus, type FileVersion, type PullRequestRef } from '../repo-files/index.ts';
+import { fileVersions, type ChangedFile, type DiffCommits, type FileStatus, type FileVersion } from '../repo-files/index.ts';
 import { GuideError } from './errors.ts';
 import type { ImagePointer } from './pointer.ts';
+import type { PullRequestFiles } from './resolve.ts';
 
 /** The image files a guide shows as images, by extension, with the media type of each. */
 const IMAGE_TYPES: Record<string, string> = {
@@ -43,9 +44,12 @@ export function imageFileParam(version: FileVersion): string {
 	return `${version.commitSha}/${version.path}`;
 }
 
-/** The images of a changed image file. `pageUrl` is the guide page's URL, ending in `/`. */
-export function imagePair(file: ChangedFile, pull: PullRequestRef, pageUrl: string): ImagePair {
-	const { base, head } = fileVersions(file, pull);
+/**
+ * The images of a changed image file, before at the merge base and after at the head commit.
+ * `pageUrl` is the guide page's URL, ending in `/`.
+ */
+export function imagePair(file: ChangedFile, diff: DiffCommits, pageUrl: string): ImagePair {
+	const { base, head } = fileVersions(file, diff);
 	const image = (version: FileVersion, when: 'before' | 'after'): PageImage => ({
 		src: `${pageUrl}images/${imageFileParam(version).split('/').map(encodeURIComponent).join('/')}`,
 		alt: `${version.path} ${when} the change`,
@@ -67,16 +71,12 @@ export interface StepImage extends ImagePair {
  * Resolves a step's image pointers against the pull request's changed files, once per file, in the order the step
  * first points at each one. Throws a GuideError when a pointer names a file the pull request does not change.
  */
-export function stepImages(
-	pointers: ImagePointer[],
-	changed: ChangedFile[],
-	pull: PullRequestRef,
-	pageUrl: string,
-): StepImage[] {
+export function stepImages(pointers: ImagePointer[], files: PullRequestFiles, pageUrl: string): StepImage[] {
+	const { pull } = files;
 	const images = new Map<string, StepImage>();
 	for (const pointer of pointers) {
 		if (images.has(pointer.path)) continue;
-		const file = changed.find((candidate) => candidate.path === pointer.path);
+		const file = files.changed.find((candidate) => candidate.path === pointer.path);
 		if (!file) {
 			throw new GuideError(pointer.field, `${pointer.path} is not a file that ${pull.owner}/${pull.repo}#${pull.pr} changes.`);
 		}
@@ -84,7 +84,7 @@ export function stepImages(
 			path: file.path,
 			status: file.status,
 			blobSha: file.blobSha,
-			...imagePair(file, pull, pageUrl),
+			...imagePair(file, files.diff, pageUrl),
 		});
 	}
 	return [...images.values()];

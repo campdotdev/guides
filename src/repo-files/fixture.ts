@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { ChangedFile, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
+import type { Comparison, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
 
 /**
- * Where a recorded snapshot keeps the compare file list for a base and head pair.
+ * Where a recorded snapshot keeps the comparison of a base and head pair: the merge base and the changed files.
  * `scripts/record-fixture.ts` writes to the same paths.
  */
 export function comparePath(dir: string, pull: PullRequestRef): string {
@@ -18,7 +18,7 @@ export function filePath(dir: string, repo: RepoRef, path: string, commitSha: st
 /** Serves files from a snapshot that `scripts/record-fixture.ts` recorded. It never touches the network. */
 export function fixtureRepoFileSource(dir: string): RepoFileSource {
 	return {
-		async listChangedFiles(pull: PullRequestRef): Promise<ChangedFile[]> {
+		async compare(pull: PullRequestRef): Promise<Comparison> {
 			const path = comparePath(dir, pull);
 			const json = await readFile(path, 'utf8').catch((error: NodeJS.ErrnoException) => {
 				if (error.code !== 'ENOENT') throw error;
@@ -26,7 +26,7 @@ export function fixtureRepoFileSource(dir: string): RepoFileSource {
 					`No fixture snapshot for ${pull.owner}/${pull.repo}#${pull.pr} at ${path}. Record one with \`pnpm record-fixture <guide file>\`.`,
 				);
 			});
-			return JSON.parse(json) as ChangedFile[];
+			return JSON.parse(json) as Comparison;
 		},
 
 		async readFile(repo: RepoRef, path: string, commitSha: string): Promise<Uint8Array | null> {

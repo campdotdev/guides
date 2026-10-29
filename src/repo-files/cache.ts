@@ -2,25 +2,25 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { comparePath, filePath } from './fixture.ts';
-import type { ChangedFile, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
+import type { Comparison, PullRequestRef, RepoFileSource, RepoRef } from './types.ts';
 
 /**
  * Wraps a repo file source with a cache in `dir`.
- * A file at a commit never changes, and neither does the file list between two commits, so an entry never goes stale.
+ * A file at a commit never changes, and neither does the comparison of two commits, so an entry never goes stale.
  * The cache uses the snapshot layout that the fixture source reads.
  *
  * Each read that misses the cache logs one line, so the build log lists every request the build made.
  */
 export function cachedRepoFileSource(source: RepoFileSource, dir: string, log: (line: string) => void = console.log): RepoFileSource {
 	return {
-		async listChangedFiles(pull: PullRequestRef): Promise<ChangedFile[]> {
+		async compare(pull: PullRequestRef): Promise<Comparison> {
 			const path = comparePath(dir, pull);
 			const cached = await readCached(path);
-			if (cached) return JSON.parse(new TextDecoder().decode(cached)) as ChangedFile[];
+			if (cached) return JSON.parse(new TextDecoder().decode(cached)) as Comparison;
 			log(`Fetched the files that ${pull.owner}/${pull.repo}#${pull.pr} changes`);
-			const files = await source.listChangedFiles(pull);
-			await writeCached(path, `${JSON.stringify(files, null, '\t')}\n`);
-			return files;
+			const comparison = await source.compare(pull);
+			await writeCached(path, `${JSON.stringify(comparison, null, '\t')}\n`);
+			return comparison;
 		},
 
 		async readFile(repo: RepoRef, path: string, commitSha: string): Promise<Uint8Array | null> {

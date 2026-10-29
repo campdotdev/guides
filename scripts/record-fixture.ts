@@ -3,8 +3,9 @@
 // Usage:
 //   GITHUB_TOKEN=$(gh auth token) pnpm record-fixture tests/fixtures/guides/shaders/264.md
 //
-// For each guide, the script asks the production GitHub source for the file list between the
-// guide's baseSha and headSha, then saves every changed file at both commits where it exists.
+// For each guide, the script asks the production GitHub source to compare the guide's baseSha and headSha.
+// It saves the comparison, which names the merge base and the changed files, and every changed file
+// at the merge base and the head commit where it exists.
 // It writes to REPO_FILE_FIXTURES, or tests/fixtures/repo-files by default.
 
 import { createHash } from 'node:crypto';
@@ -14,7 +15,7 @@ import { parse } from 'yaml';
 import { pullRequestOf, guideFrontmatter } from '../src/guide/schema.ts';
 import { comparePath, filePath } from '../src/repo-files/fixture.ts';
 import { githubRepoFileSource } from '../src/repo-files/github.ts';
-import { DEFAULT_FIXTURE_DIR, fileVersions, type ChangedFile, type FileVersion, type PullRequestRef } from '../src/repo-files/index.ts';
+import { DEFAULT_FIXTURE_DIR, diffCommits, fileVersions, type ChangedFile, type FileVersion, type PullRequestRef } from '../src/repo-files/index.ts';
 
 const guides = process.argv.slice(2);
 if (guides.length === 0) {
@@ -32,17 +33,18 @@ const source = githubRepoFileSource(token);
 
 for (const guide of guides) {
 	const pull = pullRequestOf(guideFrontmatter.parse(readFrontmatter(await readFile(guide, 'utf8'))));
-	const files = await source.listChangedFiles(pull);
-	await write(comparePath(outDir, pull), `${JSON.stringify(files, null, '\t')}\n`);
+	const comparison = await source.compare(pull);
+	await write(comparePath(outDir, pull), `${JSON.stringify(comparison, null, '\t')}\n`);
+	const diff = diffCommits(pull, comparison);
 
 	let saved = 0;
-	for (const file of files) {
-		const { base, head } = fileVersions(file, pull);
+	for (const file of comparison.files) {
+		const { base, head } = fileVersions(file, diff);
 		// GitHub lists the head blob, or the base blob for a deleted file.
 		if (head) saved += await save(pull, file, head, file.blobSha);
 		if (base) saved += await save(pull, file, base, head ? undefined : file.blobSha);
 	}
-	console.log(`${pull.owner}/${pull.repo}#${pull.pr}: ${files.length} changed files, ${saved} file versions saved to ${outDir}`);
+	console.log(`${pull.owner}/${pull.repo}#${pull.pr}: ${comparison.files.length} changed files, ${saved} file versions saved to ${outDir}`);
 }
 
 function readFrontmatter(markdown: string): unknown {

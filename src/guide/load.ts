@@ -57,7 +57,7 @@ export async function loadGuide(
 					title: step.title,
 					html: renderStepProse(step, stepFiles, context),
 					files: stepFiles,
-					images: stepImages(step.images, files.changed, pull, pageUrl),
+					images: stepImages(step.images, files, pageUrl),
 					additions: rows.filter((row) => row.kind === 'add').length,
 					deletions: rows.filter((row) => row.kind === 'del').length,
 				};
@@ -68,7 +68,7 @@ export async function loadGuide(
 			overview: OVERVIEW_PARTS.map((part) => ({ ...part, html: renderProse(parsed.overview[part.key], context) })),
 			steps,
 			changedFiles: files.changed,
-			alsoChanged: alsoChanged(parsed.steps, files.changed, pull, pageUrl),
+			alsoChanged: alsoChanged(parsed.steps, files, pageUrl),
 		};
 	});
 }

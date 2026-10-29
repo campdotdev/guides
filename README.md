@@ -48,9 +48,11 @@ GUIDES_DIR=content REPO_FILE_SOURCE=github REPO_FILE_CACHE=.cache/repo-files GIT
 
 The specs in `tests/e2e` drive the built site in Chromium and assert through roles and accessible names. They read the fixture guides in `tests/fixtures/guides`, which the test suite owns, so the sample guide on `content` can change without breaking them. The search specs query the real Pagefind index that the build writes. Each guide in `tests/fixtures/malformed` must fail the build with an error that names the bad field.
 
-`tests/fixtures/previous-head` holds the same guide pinned to the pull request's previous head, `f09b489`. `reviewed-files.spec.ts` serves a build of it, marks files as reviewed, and then reloads into the main build, the way a guide refresh replaces the page.
+`tests/fixtures/guides/shaders/241.md` names a `baseSha` newer than the merge base, so `merge-base.spec.ts` checks that removed lines come from the merge base.
 
-The `fixture` source serves each fixture guide's files from `tests/fixtures/repo-files`, a snapshot of the pull request at its base and head commits. The tests never touch the network. To record the snapshot for a new fixture guide, run:
+`tests/fixtures/previous-head` holds the #264 fixture guide pinned to the pull request's previous head, `f09b489`. `reviewed-files.spec.ts` serves a build of it, marks files as reviewed, and then reloads into the main build, the way a guide refresh replaces the page.
+
+The `fixture` source serves each fixture guide's files from `tests/fixtures/repo-files`. The snapshot holds GitHub's comparison of the guide's `baseSha` and `headSha`, which names their merge base, and every changed file at the merge base and the head commit. The tests never touch the network. To record the snapshot for a new fixture guide, run:
 
 ```sh
 GITHUB_TOKEN=$(gh auth token) pnpm record-fixture tests/fixtures/guides/<repo>/<pr>.md

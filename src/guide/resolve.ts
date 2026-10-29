@@ -1,4 +1,13 @@
-import { fileVersions, type ChangedFile, type FileStatus, type FileVersion, type PullRequestRef, type RepoFileSource } from '../repo-files/index.ts';
+import {
+	diffCommits,
+	fileVersions,
+	type ChangedFile,
+	type DiffCommits,
+	type FileStatus,
+	type FileVersion,
+	type PullRequestRef,
+	type RepoFileSource,
+} from '../repo-files/index.ts';
 import { GuideError } from './errors.ts';
 import { cutHunks, hiddenRuns, linesOn, splitLines, touches, unchangedHunk, wholeFileRows, type Side } from './hunks.ts';
 import { parsePatch, type DiffRow, type Hunk } from './patch.ts';
@@ -12,7 +21,7 @@ export interface StepFile {
 	basePath: string;
 	status: FileStatus;
 	blobSha: string;
-	/** The file's text at the base commit, or null when it does not exist there. */
+	/** The file's text at the merge base, or null when it does not exist there. */
 	base: string | null;
 	/** The file's text at the head commit, or null when it does not exist there. */
 	head: string | null;
@@ -24,21 +33,28 @@ export interface StepFile {
 	gaps: DiffRow[][];
 }
 
-/** Reads a pull request's files once per page and resolves each step's block pointers to hunks. */
+/**
+ * Reads a pull request's files once per page and resolves each step's block pointers to hunks.
+ * GitHub diffs the head commit against the merge base, so the base side of every file comes from the merge base.
+ */
 export class PullRequestFiles {
 	readonly pull: PullRequestRef;
+	/** The merge base and the head commit. */
+	readonly diff: DiffCommits;
 	readonly changed: ChangedFile[];
 	readonly #source: RepoFileSource;
 	readonly #texts = new Map<string, Promise<string | null>>();
 
-	private constructor(pull: PullRequestRef, source: RepoFileSource, changed: ChangedFile[]) {
+	private constructor(pull: PullRequestRef, source: RepoFileSource, diff: DiffCommits, changed: ChangedFile[]) {
 		this.pull = pull;
 		this.#source = source;
+		this.diff = diff;
 		this.changed = changed;
 	}
 
 	static async load(pull: PullRequestRef, source: RepoFileSource): Promise<PullRequestFiles> {
-		return new PullRequestFiles(pull, source, await source.listChangedFiles(pull));
+		const comparison = await source.compare(pull);
+		return new PullRequestFiles(pull, source, diffCommits(pull, comparison), comparison.files);
 	}
 
 	/** The files a step's block pointers touch, in the order the step first points at them. */
@@ -59,9 +75,9 @@ export class PullRequestFiles {
 		if (changed.patch === undefined && !pureRename) {
 			throw new GuideError(first.field, `GitHub shows no text diff for ${path}, so a line range cannot point into it.`);
 		}
-		const versions = fileVersions(changed, this.pull);
+		const versions = fileVersions(changed, this.diff);
 		const [base, head] = await Promise.all([versions.base && this.#text(versions.base), versions.head && this.#text(versions.head)]);
-		// A deleted file has no lines at the head commit, so its pointers count lines at the base commit.
+		// A deleted file has no lines at the head commit, so its pointers count lines at the merge base.
 		const side: Side = changed.status === 'removed' ? 'base' : 'head';
 		const text = side === 'head' ? head : base;
 		const lineCount = text === null ? 0 : splitLines(text).length;

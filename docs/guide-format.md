@@ -16,7 +16,7 @@ Markdown files at the top level of the branch, such as `README.md`, are not guid
 | `pr` | positive integer | Yes | The pull request number. The file's name is this number plus `.md`. |
 | `title` | string | Yes | The pull request title, which is a Conventional Commit. The page shows it as its heading. |
 | `scope` | string | No | The Conventional Commit scope of the title. The repo's page can filter its guides by scope. |
-| `baseSha` | commit SHA | Yes | The commit the pull request is based on. |
+| `baseSha` | commit SHA | Yes | The commit the pull request is based on. GitHub diffs `headSha` against the merge base of `baseSha` and `headSha`. The merge base is `baseSha` itself unless `baseSha` is a newer commit on the base branch than the one the pull request's branch started from. The page reads removed lines, deleted files, and "Before" images at the merge base. |
 | `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. When the pull request's head differs from it, the page shows a banner that names this commit and links to the pull request. |
 | `afterTheFact` | boolean | No | `true` when the guide was written from the diff after the session ended. The page then says it lacks the session's reasoning. Defaults to `false`. |
 
@@ -79,7 +79,7 @@ A block pointer is a Markdown link with no text, alone on its line:
 The link target has two parts:
 
 - The path, relative to the repository root, with no leading `/` or `./`. The file must be one the pull request changes between `baseSha` and `headSha`, and GitHub must show a text diff for it. A file renamed without edits is the exception. [New, deleted, and renamed files](#new-deleted-and-renamed-files) describes it.
-- The line range, as `#L<start>-L<end>` or `#L<line>`. The lines are numbered in the file at `headSha`, or at `baseSha` in a deleted file, and the range includes both ends. It must lie inside the file and overlap the diff.
+- The line range, as `#L<start>-L<end>` or `#L<line>`. The lines are numbered in the file at `headSha`, or at the merge base in a deleted file, and the range includes both ends. It must lie inside the file and overlap the diff.
 
 The page shows the diff rows from three lines before the range to three lines after it. The rows come from GitHub's hunks for the file, so they match the pull request's diff on GitHub. [Separators](#separators) hide the file's other lines. Two pointers into one file in the same step share one table, and rows they both show appear once.
 
@@ -98,7 +98,7 @@ A separator sits above, between, and below the rows a file's block pointers show
 | `60 more removed lines` | Removed lines outside the pointers' rows, such as the rest of a deleted file. |
 | `73 more lines, 24 changed` | Unchanged lines and changed lines together. |
 
-Clicking a separator shows its lines, and clicking it again hides them. The build reads each file at `baseSha` and `headSha` to fill in the unchanged lines.
+Clicking a separator shows its lines, and clicking it again hides them. The build fills in the unchanged lines from the file at `headSha`.
 
 A pointer range that spans two of GitHub's hunks shows both hunks, with a separator for the unchanged lines between them.
 
@@ -109,7 +109,7 @@ A block pointer into a file that the pull request adds, deletes, or renames work
 | File | Line numbers | The page shows |
 | --- | --- | --- |
 | New | At `headSha`. | Only added lines. The file header says **New file**. |
-| Deleted | At `baseSha`, because the file has no lines at `headSha`. | Only removed lines. The file header says **Deleted file**. |
+| Deleted | At the merge base, because the file has no lines at `headSha`. | Only removed lines. The file header says **Deleted file**. |
 | Renamed | At `headSha`. The pointer names the new path. | The diff. The file header shows the new path and says **Renamed from** the old path. |
 | Renamed without edits | At `headSha`. The pointer names the new path. | The pointer's rows as unchanged lines, because GitHub shows no diff for the file. The file header says **Renamed from** the old path. |
 
@@ -125,7 +125,7 @@ A block pointer to an image file shows the image instead of a diff. It is a link
 
 An image file is a file whose name ends in `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`. The file must be one the pull request changes between `baseSha` and `headSha`. A line range on an image pointer fails the build.
 
-The page shows the image at `baseSha` under "Before" and the image at `headSha` under "After". It shows only the versions that exist:
+The page shows the image at the merge base under "Before" and the image at `headSha` under "After". It shows only the versions that exist:
 
 | The pull request | The page shows |
 | --- | --- |
@@ -170,7 +170,7 @@ A link with no text fails the build unless it is a block pointer alone on its li
 
 After the last step, the left pane lists every file that the pull request changes and no block pointer names, under the heading "Also changed". The renderer builds the list from the pull request's file list, so a guide cannot leave a file off it. An inline pointer does not take a file off the list.
 
-Each entry shows the file's path, its status, and its added and removed line counts. An image file also shows a thumbnail of the image at `headSha`, or at `baseSha` for a deleted image.
+Each entry shows the file's path, its status, and its added and removed line counts. An image file also shows a thumbnail of the image at `headSha`, or at the merge base for a deleted image.
 
 When block pointers name every changed file, the page has no "Also changed" section.
 

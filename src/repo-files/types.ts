@@ -4,7 +4,10 @@ export interface RepoRef {
 	repo: string;
 }
 
-/** A pull request pinned to the base and head commits that a guide describes. */
+/**
+ * A pull request pinned to the base and head commits that a guide describes.
+ * The diff starts from the merge base of the two commits, which `Comparison` names.
+ */
 export interface PullRequestRef extends RepoRef {
 	pr: number;
 	baseSha: string;
@@ -35,13 +38,24 @@ export interface ChangedFile {
 	patch?: string;
 }
 
+/** GitHub's compare view of a pull request's base and head commits. */
+export interface Comparison {
+	/**
+	 * The commit the diff starts from: the merge base of `baseSha` and `headSha`.
+	 * It is `baseSha` unless the base branch moved on after the pull request's branch left it.
+	 */
+	mergeBaseSha: string;
+	/** The files that changed between the merge base and the head commit. */
+	files: ChangedFile[];
+}
+
 /**
  * Where the renderer reads a pull request's files from.
  * Production reads the GitHub API. Tests read a recorded snapshot.
  */
 export interface RepoFileSource {
-	/** Lists the files that changed between the pull request's base and head commits. */
-	listChangedFiles(pull: PullRequestRef): Promise<ChangedFile[]>;
+	/** Compares the pull request's base and head commits. */
+	compare(pull: PullRequestRef): Promise<Comparison>;
 	/** Returns a file's bytes at a commit, or null when the path does not exist at that commit. */
 	readFile(repo: RepoRef, path: string, commitSha: string): Promise<Uint8Array | null>;
 }
