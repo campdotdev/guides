@@ -40,6 +40,12 @@ const fileCount = `${step.files.length} ${step.files.length === 1 ? 'file' : 'fi
 	initStepSelection();
 </script>
 
+<script>
+	import { initStepLinks } from '../client/step-links.ts';
+
+	initStepLinks();
+</script>
+
 <style>
 	.step {
 		margin-bottom: 16px;
