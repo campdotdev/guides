@@ -59,7 +59,7 @@ The page shows the overview in the right pane until the reader opens a step.
 
 ## Steps
 
-Each second-level section after the overview is a step, and its heading is the step's title. The page numbers the steps from 1, in file order.
+Each second-level section after the overview is a step, and its heading is the step's title. The page numbers the steps from 1, in file order. Step `n` has the anchor `#step-<n>`, so `https://campdotdev.github.io/guides/shaders/264/#step-2` opens that guide at step 2.
 
 A step holds two things:
 
