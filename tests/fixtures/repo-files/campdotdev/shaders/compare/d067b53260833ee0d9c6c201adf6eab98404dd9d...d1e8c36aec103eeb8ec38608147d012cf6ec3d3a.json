@@ -1,0 +1,18 @@
+[
+	{
+		"path": "apps/docs/src/components/LiveDemo.tsx",
+		"status": "removed",
+		"blobSha": "37cbeec80c0c36b3c7bd1c236cec1a3b2a7e04ae",
+		"additions": 0,
+		"deletions": 82,
+		"patch": "@@ -1,82 +0,0 @@\n-'use client';\n-\n-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';\n-\n-interface LiveDemoProps {\n-  children: ReactNode;\n-  height?: string;\n-  background?: string;\n-  className?: string;\n-  style?: CSSProperties;\n-}\n-\n-export function LiveDemo({\n-  children,\n-  height = '70vh',\n-  background = '#0a0a14',\n-  className,\n-  style,\n-}: LiveDemoProps) {\n-  const ref = useRef<HTMLDivElement>(null);\n-  const [isFullscreen, setIsFullscreen] = useState(false);\n-\n-  useEffect(() => {\n-    const handler = () => {\n-      setIsFullscreen(document.fullscreenElement === ref.current);\n-    };\n-\n-    document.addEventListener('fullscreenchange', handler);\n-\n-    return () => {\n-      document.removeEventListener('fullscreenchange', handler);\n-    };\n-  }, []);\n-\n-  const toggleFullscreen = () => {\n-    if (document.fullscreenElement === ref.current) {\n-      void document.exitFullscreen();\n-    } else {\n-      void ref.current?.requestFullscreen();\n-    }\n-  };\n-\n-  return (\n-    <div\n-      className={className}\n-      ref={ref}\n-      style={{\n-        position: 'relative',\n-        height: isFullscreen ? '100vh' : height,\n-        background,\n-        borderRadius: isFullscreen ? 0 : 8,\n-        overflow: 'hidden',\n-        border: isFullscreen ? 'none' : '1px solid var(--border)',\n-        ...style,\n-      }}\n-    >\n-      <div aria-hidden=\"true\" role=\"presentation\" style={{ position: 'absolute', inset: 0 }}>\n-        {children}\n-      </div>\n-      <button\n-        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}\n-        onClick={toggleFullscreen}\n-        style={{\n-          position: 'absolute',\n-          top: '0.5rem',\n-          right: '0.5rem',\n-          zIndex: 5,\n-          width: 32,\n-          height: 32,\n-          border: 'none',\n-          borderRadius: 6,\n-          background: 'rgba(0, 0, 0, 0.4)',\n-          color: '#fff',\n-          cursor: 'pointer',\n-          fontSize: '0.85rem',\n-        }}\n-      >\n-        {isFullscreen ? '×' : '⛶'}\n-      </button>\n-    </div>\n-  );\n-}"
+	},
+	{
+		"path": "apps/docs/src/lib/registrySources.ts",
+		"status": "removed",
+		"blobSha": "75bf19c518502d0318ab652fdd3a00c1cea4f6d4",
+		"additions": 0,
+		"deletions": 36,
+		"patch": "@@ -1,36 +0,0 @@\n-import { cache } from 'react';\n-\n-import { readFile } from 'node:fs/promises';\n-import { resolve, sep } from 'node:path';\n-\n-const REGISTRY_DIR = resolve(process.cwd(), '..', '..', 'registry');\n-\n-type RegistrySlug =\n-  | 'linear-gradient'\n-  | 'simplex-noise'\n-  | 'dot-field'\n-  | 'wave-lines'\n-  | 'mesh-gradient'\n-  | 'aurora'\n-  | 'god-rays';\n-\n-const SLUG_FILES: Record<RegistrySlug, string> = {\n-  'linear-gradient': 'linear-gradient/linear-gradient.tsx',\n-  'simplex-noise': 'simplex-noise/simplex-noise.tsx',\n-  'dot-field': 'dot-field.tsx',\n-  'wave-lines': 'wave-lines.tsx',\n-  'mesh-gradient': 'mesh-gradient/mesh-gradient.tsx',\n-  aurora: 'aurora/aurora.tsx',\n-  'god-rays': 'god-rays/god-rays.tsx',\n-};\n-\n-export const readRegistrySource = cache(async (slug: RegistrySlug): Promise<string> => {\n-  const relPath = SLUG_FILES[slug];\n-  const path = resolve(REGISTRY_DIR, relPath);\n-\n-  if (!path.startsWith(REGISTRY_DIR + sep)) {\n-    throw new Error(`Registry path escapes registry dir: ${slug}`);\n-  }\n-\n-  return readFile(path, 'utf8');\n-});"
+	}
+]
