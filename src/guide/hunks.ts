@@ -55,3 +55,62 @@ function subHunk(hunk: Hunk, start: number, end: number): Hunk {
 function countLines(rows: DiffRow[], side: 'oldLine' | 'newLine'): number {
 	return rows.filter((row) => row[side] !== null).length;
 }
+
+/**
+ * A file's whole diff as rows: GitHub's hunks, with the unchanged lines between and around them
+ * filled in from the file at the head commit.
+ */
+export function wholeFileRows(hunks: Hunk[], head: string | null): DiffRow[] {
+	const lines = head === null ? [] : splitLines(head);
+	const rows: DiffRow[] = [];
+	let oldNext = 1;
+	let newNext = 1;
+	const unchangedUntil = (newEnd: number) => {
+		while (newNext <= newEnd) {
+			rows.push({ kind: 'context', oldLine: oldNext++, newLine: newNext, text: lines[newNext - 1] ?? '' });
+			newNext++;
+		}
+	};
+	for (const hunk of hunks) {
+		unchangedUntil(firstLine(hunk.newStart, hunk.newLines) - 1);
+		rows.push(...hunk.rows);
+		oldNext = firstLine(hunk.oldStart, hunk.oldLines) + hunk.oldLines;
+		newNext = firstLine(hunk.newStart, hunk.newLines) + hunk.newLines;
+	}
+	unchangedUntil(lines.length);
+	return rows;
+}
+
+/**
+ * The rows of a file's whole diff that its visible hunks leave out, as one run before each hunk
+ * and one after the last. `runs[i]` comes before `visible[i]`. A run can be empty.
+ */
+export function hiddenRuns(whole: DiffRow[], visible: Hunk[]): DiffRow[][] {
+	const runs: DiffRow[][] = [[]];
+	let index = 0;
+	for (const hunk of visible) {
+		const first = rowKey(hunk.rows[0]!);
+		while (index < whole.length && rowKey(whole[index]!) !== first) runs.at(-1)!.push(whole[index++]!);
+		index += hunk.rows.length;
+		runs.push([]);
+	}
+	runs.at(-1)!.push(...whole.slice(index));
+	return runs;
+}
+
+/** Unified diff numbers an empty side by the line before it, so its first line is one later. */
+function firstLine(start: number, count: number): number {
+	return count === 0 ? start + 1 : start;
+}
+
+function rowKey(row: DiffRow): string {
+	return `${row.oldLine}:${row.newLine}`;
+}
+
+/** A file's lines, without the empty string a final newline would add. */
+export function splitLines(text: string): string[] {
+	if (text === '') return [];
+	const lines = text.split('\n');
+	if (text.endsWith('\n')) lines.pop();
+	return lines;
+}

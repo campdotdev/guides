@@ -1,7 +1,7 @@
 import type { ChangedFile, FileStatus, PullRequestRef, RepoFileSource } from '../repo-files/index.ts';
 import { GuideError } from './errors.ts';
-import { cutHunks, touches } from './hunks.ts';
-import { parsePatch, type Hunk } from './patch.ts';
+import { cutHunks, hiddenRuns, splitLines, touches, wholeFileRows } from './hunks.ts';
+import { parsePatch, type DiffRow, type Hunk } from './patch.ts';
 import type { ParsedStep } from './parse.ts';
 import type { Pointer } from './pointer.ts';
 
@@ -17,6 +17,11 @@ export interface StepFile {
 	/** The file's text at the head commit, or null when it does not exist there. */
 	head: string | null;
 	hunks: Hunk[];
+	/**
+	 * The rows of the file's diff that `hunks` leave out, which separators hide until the reader expands them.
+	 * `gaps[i]` comes before `hunks[i]`, and the last entry comes after the last hunk. A gap can be empty.
+	 */
+	gaps: DiffRow[][];
 }
 
 /** Reads a pull request's files once per page and resolves each step's block pointers to hunks. */
@@ -57,7 +62,7 @@ export class PullRequestFiles {
 			changed.status === 'added' ? null : this.#text(basePath, this.pull.baseSha),
 			changed.status === 'removed' ? null : this.#text(path, this.pull.headSha),
 		]);
-		const lineCount = head === null ? 0 : countLines(head);
+		const lineCount = head === null ? 0 : splitLines(head).length;
 		const hunks = parsePatch(changed.patch);
 		for (const pointer of pointers) {
 			const { start, end } = pointer.lines;
@@ -69,6 +74,7 @@ export class PullRequestFiles {
 				throw new GuideError(pointer.field, `lines ${start}-${end} of ${path} are outside the diff, which covers lines ${covered}.`);
 			}
 		}
+		const visible = cutHunks(hunks, pointers.map((pointer) => pointer.lines));
 		return {
 			path,
 			basePath,
@@ -76,7 +82,8 @@ export class PullRequestFiles {
 			blobSha: changed.blobSha,
 			base,
 			head,
-			hunks: cutHunks(hunks, pointers.map((pointer) => pointer.lines)),
+			hunks: visible,
+			gaps: hiddenRuns(wholeFileRows(hunks, head), visible),
 		};
 	}
 
@@ -93,9 +100,4 @@ export class PullRequestFiles {
 	#name(): string {
 		return `${this.pull.owner}/${this.pull.repo}#${this.pull.pr}`;
 	}
-}
-
-function countLines(text: string): number {
-	if (text === '') return 0;
-	return text.endsWith('\n') ? text.split('\n').length - 1 : text.split('\n').length;
 }
