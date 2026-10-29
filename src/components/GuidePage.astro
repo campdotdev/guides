@@ -1,0 +1,57 @@
+---
+import type { Guide } from '../guide/load.ts';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GuideHeader from './GuideHeader.astro';
+import Overview from './Overview.astro';
+import StepBlock from './StepBlock.astro';
+import StepExplanation from './StepExplanation.astro';
+
+interface Props {
+	guide: Guide;
+}
+const { guide } = Astro.props;
+---
+
+<BaseLayout title={guide.meta.title}>
+	<noscript slot="head">
+		<style>
+			/* Without the step script, show every step's code and explanation. */
+			.step-code[hidden],
+			[data-explains][hidden] {
+				display: block;
+			}
+		</style>
+	</noscript>
+	<GuideHeader meta={guide.meta} />
+	<main class="guide">
+		<section class="steps-pane" aria-label="Steps">
+			{guide.steps.map((step) => <StepBlock step={step} />)}
+		</section>
+		<section class="explanation-pane" aria-label="Explanation">
+			<Overview overview={guide.overview} />
+			{guide.steps.map((step) => <StepExplanation step={step} />)}
+		</section>
+	</main>
+</BaseLayout>
+
+<style>
+	.guide {
+		display: grid;
+		grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
+		align-items: start;
+	}
+
+	.steps-pane {
+		min-width: 0;
+		padding: 24px 32px;
+		border-right: 1px solid var(--border);
+	}
+
+	.explanation-pane {
+		position: sticky;
+		top: 0;
+		max-height: 100vh;
+		padding: 24px 32px;
+		overflow-y: auto;
+	}
+</style>

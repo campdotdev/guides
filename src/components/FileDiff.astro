@@ -1,0 +1,154 @@
+---
+import type { DiffRow } from '../guide/patch.ts';
+import { hunkHeader } from '../guide/patch.ts';
+import type { StepFile } from '../guide/resolve.ts';
+import { highlightLines, tokenStyle } from '../highlight.ts';
+
+interface Props {
+	file: StepFile;
+	/** A page-unique id for the file's header. */
+	id: string;
+}
+const { file, id } = Astro.props;
+
+const headLines = file.head === null ? [] : await highlightLines(file.head, file.path);
+const baseLines = file.base === null ? [] : await highlightLines(file.base, file.basePath);
+const tokensOf = (row: DiffRow) =>
+	(row.kind === 'del' ? baseLines[row.oldLine! - 1] : headLines[row.newLine! - 1]) ?? [
+		{ content: row.text, offset: 0 },
+	];
+const MARKER = { add: '+', del: '-', context: ' ' } as const;
+const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
+---
+
+<div class="file" data-file={file.path}>
+	<header class="file-header">
+		<span class="file-path" id={id}>{file.path}</span>
+		<span class="file-status">{file.status}</span>
+	</header>
+	<div class="diff-scroll">
+	<table class="diff" aria-labelledby={id}>
+		<thead class="visually-hidden">
+			<tr>
+				<th scope="col">Base line</th>
+				<th scope="col">Head line</th>
+				<th scope="col">Change</th>
+				<th scope="col">Code</th>
+			</tr>
+		</thead>
+		{
+			file.hunks.map((hunk) => (
+				<tbody>
+					<tr class="hunk-header">
+						<td colspan="4">{hunkHeader(hunk)}</td>
+					</tr>
+					{hunk.rows.map((row) => (
+						<tr class={`row row-${row.kind}`}>
+							<td class="line-number">{row.oldLine}</td>
+							<td class="line-number">{row.newLine}</td>
+							<td class="marker">
+								<span aria-hidden="true">{MARKER[row.kind]}</span>
+								{SPOKEN[row.kind] && <span class="visually-hidden">{SPOKEN[row.kind]}</span>}
+							</td>
+							<td class="code">
+								{tokensOf(row).map((token) => <span style={tokenStyle(token)}>{token.content}</span>)}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			))
+		}
+	</table>
+	</div>
+</div>
+
+<style>
+	.file {
+		margin-bottom: 12px;
+		overflow: hidden;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+	}
+
+	.file:last-child {
+		margin-bottom: 0;
+	}
+
+	.file-header {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 6px 12px;
+		border-bottom: 1px solid var(--border);
+		background: var(--surface);
+		font: 0.8125rem var(--mono);
+	}
+
+	.file-path {
+		overflow-wrap: anywhere;
+	}
+
+	.file-status {
+		color: var(--muted);
+	}
+
+	.diff-scroll {
+		overflow-x: auto;
+	}
+
+	.diff {
+		width: 100%;
+		border-collapse: collapse;
+		font: 0.75rem/1.5 var(--mono);
+		tab-size: 2;
+	}
+
+	td {
+		padding: 0 8px;
+		vertical-align: top;
+	}
+
+	.line-number,
+	.marker {
+		width: 1%;
+		color: var(--muted);
+		white-space: nowrap;
+		user-select: none;
+	}
+
+	.line-number {
+		min-width: 40px;
+		text-align: right;
+	}
+
+	.marker {
+		padding: 0 4px;
+	}
+
+	.code {
+		white-space: pre;
+	}
+
+	.row-add {
+		background: var(--add-bg);
+	}
+
+	.row-add .marker {
+		color: var(--add-fg);
+	}
+
+	.row-del {
+		background: var(--del-bg);
+	}
+
+	.row-del .marker {
+		color: var(--del-fg);
+	}
+
+	.hunk-header td {
+		padding: 4px 8px;
+		background: var(--hunk-bg);
+		color: var(--muted);
+		white-space: pre;
+	}
+</style>

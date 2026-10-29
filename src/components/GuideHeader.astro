@@ -1,0 +1,56 @@
+---
+import type { GuideFrontmatter } from '../guide/schema.ts';
+
+interface Props {
+	meta: GuideFrontmatter;
+}
+const { meta } = Astro.props;
+const github = `https://github.com/${meta.repo}`;
+---
+
+<header class="guide-header">
+	<p class="guide-source">
+		<a href={`${github}/pull/${meta.pr}`}>{meta.repo}#{meta.pr}</a>
+		{meta.scope && <span class="guide-scope">{meta.scope}</span>}
+	</p>
+	<h1>{meta.title}</h1>
+	<p class="guide-commit">
+		Describes commit <a href={`${github}/commit/${meta.headSha}`}><code>{meta.headSha.slice(0, 7)}</code></a>
+	</p>
+	{meta.afterTheFact && <p class="guide-note">Written after the fact from the diff, without the session’s reasoning.</p>}
+</header>
+
+<style>
+	.guide-header {
+		padding: 24px 32px 16px;
+		border-bottom: 1px solid var(--border);
+	}
+
+	h1 {
+		margin: 4px 0;
+		font-size: 1.6rem;
+		line-height: 1.3;
+	}
+
+	p {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+
+	code {
+		font-family: var(--mono);
+	}
+
+	.guide-scope {
+		margin-left: 8px;
+		padding: 0 8px;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+	}
+
+	.guide-note {
+		margin-top: 8px;
+		font-style: italic;
+	}
+</style>

@@ -1,0 +1,124 @@
+---
+import type { Step } from '../guide/load.ts';
+import FileDiff from './FileDiff.astro';
+
+interface Props {
+	step: Step;
+}
+const { step } = Astro.props;
+const id = `step-${step.number}`;
+const fileCount = `${step.files.length} ${step.files.length === 1 ? 'file' : 'files'}`;
+---
+
+<article class="step" id={id} data-step={step.number} aria-labelledby={`${id}-heading`}>
+	<div class="step-header">
+		<h2 id={`${id}-heading`} class="step-heading">
+			<button type="button" aria-expanded="false" aria-controls={`${id}-code`} data-step-toggle>
+				Step {step.number}: {step.title}
+			</button>
+		</h2>
+		<p class="step-meta">
+			<span>{fileCount}</span>
+			<span class="line-counts" aria-hidden="true">
+				<span class="additions">+{step.additions}</span>
+				<span class="deletions">-{step.deletions}</span>
+			</span>
+			<span class="visually-hidden">{step.additions} lines added, {step.deletions} removed</span>
+		</p>
+		<ul class="step-files">
+			{step.files.map((file) => <li>{file.path}</li>)}
+		</ul>
+	</div>
+	<div id={`${id}-code`} class="step-code" hidden>
+		{step.files.map((file, index) => <FileDiff file={file} id={`${id}-file-${index + 1}`} />)}
+	</div>
+</article>
+
+<script>
+	import { initStepSelection } from '../client/step-selection.ts';
+
+	initStepSelection();
+</script>
+
+<style>
+	.step {
+		margin-bottom: 16px;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+	}
+
+	.step[data-selected] {
+		border-color: var(--accent);
+	}
+
+	.step-header {
+		position: relative;
+		padding: 12px 16px;
+	}
+
+	.step-heading {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	/* The button's hit area covers the whole header, so a click on the file list opens the step too. */
+	.step-heading button {
+		all: unset;
+		cursor: pointer;
+	}
+
+	.step-heading button::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: 8px;
+	}
+
+	.step-heading button:focus-visible::after {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+
+	.step-meta,
+	.step-files {
+		margin: 4px 0 0;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.8125rem;
+	}
+
+	.step-meta {
+		display: flex;
+		gap: 12px;
+	}
+
+	.line-counts {
+		display: inline-flex;
+		gap: 6px;
+	}
+
+	.additions {
+		color: var(--add-fg);
+	}
+
+	.deletions {
+		color: var(--del-fg);
+	}
+
+	.step-files {
+		list-style: none;
+		font-family: var(--mono);
+		font-size: 0.75rem;
+	}
+
+	.step-files li {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.step-code {
+		padding: 12px;
+		border-top: 1px solid var(--border);
+	}
+</style>

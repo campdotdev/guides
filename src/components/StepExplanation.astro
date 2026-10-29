@@ -1,0 +1,14 @@
+---
+import type { Step } from '../guide/load.ts';
+
+interface Props {
+	step: Step;
+}
+const { step } = Astro.props;
+const id = `step-${step.number}-explanation`;
+---
+
+<section class="panel prose" aria-labelledby={id} data-explains={step.number} hidden>
+	<h2 id={id}>Step {step.number}: {step.title}</h2>
+	<Fragment set:html={step.html} />
+</section>
