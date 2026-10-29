@@ -47,7 +47,7 @@ export async function loadGuide(
 				return {
 					number: step.number,
 					title: step.title,
-					html: renderStepProse(step, context),
+					html: renderStepProse(step, stepFiles, context),
 					files: stepFiles,
 					additions: rows.filter((row) => row.kind === 'add').length,
 					deletions: rows.filter((row) => row.kind === 'del').length,
