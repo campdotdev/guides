@@ -4,27 +4,40 @@ import type { LineRange } from './pointer.ts';
 /** How many lines a block pointer shows on each side of its range. */
 export const CONTEXT_LINES = 3;
 
-/** True when the range touches the head-side lines the hunk covers. */
-export function touches(hunk: Hunk, range: LineRange): boolean {
-	const last = hunk.newStart + hunk.newLines - 1;
-	return range.start <= last && range.end >= hunk.newStart;
+/**
+ * The commit whose line numbers a pointer uses. Pointers count lines at the head commit,
+ * except in a deleted file, which has lines only at the base commit.
+ */
+export type Side = 'base' | 'head';
+
+const LINE_OF = { base: 'oldLine', head: 'newLine' } as const;
+
+/** The lines a hunk covers on `side`. */
+export function linesOn(hunk: Hunk, side: Side): LineRange {
+	const [start, count] = side === 'head' ? [hunk.newStart, hunk.newLines] : [hunk.oldStart, hunk.oldLines];
+	return { start, end: start + count - 1 };
+}
+
+/** True when the range touches the lines the hunk covers on `side`. */
+export function touches(hunk: Hunk, range: LineRange, side: Side = 'head'): boolean {
+	const covered = linesOn(hunk, side);
+	return range.start <= covered.end && range.end >= covered.start;
 }
 
 /**
  * Cuts the rows that a file's block pointers show out of GitHub's hunks.
  * Each pointer keeps the rows from `context` lines before its range to `context` lines after it,
- * plus any deleted rows in between. Pointers whose rows meet or overlap share one hunk.
+ * plus any rows from the other side in between. Pointers whose rows meet or overlap share one hunk.
  */
-export function cutHunks(hunks: Hunk[], ranges: LineRange[], context = CONTEXT_LINES): Hunk[] {
+export function cutHunks(hunks: Hunk[], ranges: LineRange[], side: Side = 'head', context = CONTEXT_LINES): Hunk[] {
 	const cut: Hunk[] = [];
 	for (const hunk of hunks) {
 		const keep = hunk.rows.map(() => false);
 		for (const range of ranges) {
-			const inWindow = hunk.rows.flatMap((row, index) =>
-				row.newLine !== null && row.newLine >= range.start - context && row.newLine <= range.end + context
-					? [index]
-					: [],
-			);
+			const inWindow = hunk.rows.flatMap((row, index) => {
+				const line = row[LINE_OF[side]];
+				return line !== null && line >= range.start - context && line <= range.end + context ? [index] : [];
+			});
 			if (inWindow.length === 0) continue;
 			keep.fill(true, inWindow[0], inWindow.at(-1)! + 1);
 		}
@@ -79,6 +92,12 @@ export function wholeFileRows(hunks: Hunk[], head: string | null): DiffRow[] {
 	}
 	unchangedUntil(lines.length);
 	return rows;
+}
+
+/** The diff of a file that a pull request renames without editing: one hunk in which every line is unchanged. */
+export function unchangedHunk(text: string): Hunk {
+	const rows = wholeFileRows([], text);
+	return { oldStart: 1, oldLines: rows.length, newStart: 1, newLines: rows.length, section: '', rows };
 }
 
 /**

@@ -1,6 +1,6 @@
 import type { ChangedFile, FileStatus, PullRequestRef, RepoFileSource } from '../repo-files/index.ts';
 import { GuideError } from './errors.ts';
-import { cutHunks, hiddenRuns, splitLines, touches, wholeFileRows } from './hunks.ts';
+import { cutHunks, hiddenRuns, linesOn, splitLines, touches, unchangedHunk, wholeFileRows, type Side } from './hunks.ts';
 import { parsePatch, type DiffRow, type Hunk } from './patch.ts';
 import type { ParsedStep } from './parse.ts';
 import type { Pointer } from './pointer.ts';
@@ -54,7 +54,9 @@ export class PullRequestFiles {
 		if (!changed) {
 			throw new GuideError(first.field, `${path} is not a file that ${this.#name()} changes.`);
 		}
-		if (changed.patch === undefined) {
+		// GitHub sends no patch for a binary file or for a file renamed without edits.
+		const pureRename = changed.previousPath !== undefined && changed.additions + changed.deletions === 0;
+		if (changed.patch === undefined && !pureRename) {
 			throw new GuideError(first.field, `GitHub shows no text diff for ${path}, so a line range cannot point into it.`);
 		}
 		const basePath = changed.previousPath ?? path;
@@ -62,19 +64,22 @@ export class PullRequestFiles {
 			changed.status === 'added' ? null : this.#text(basePath, this.pull.baseSha),
 			changed.status === 'removed' ? null : this.#text(path, this.pull.headSha),
 		]);
-		const lineCount = head === null ? 0 : splitLines(head).length;
-		const hunks = parsePatch(changed.patch);
+		// A deleted file has no lines at the head commit, so its pointers count lines at the base commit.
+		const side: Side = changed.status === 'removed' ? 'base' : 'head';
+		const text = side === 'head' ? head : base;
+		const lineCount = text === null ? 0 : splitLines(text).length;
+		const hunks = changed.patch === undefined ? [unchangedHunk(head ?? '')] : parsePatch(changed.patch);
 		for (const pointer of pointers) {
 			const { start, end } = pointer.lines;
 			if (end > lineCount) {
-				throw new GuideError(pointer.field, `${path} has ${lineCount} lines at the head commit, so #L${start}-L${end} runs past its end.`);
+				throw new GuideError(pointer.field, `${path} has ${lineCount} lines at the ${side} commit, so #L${start}-L${end} runs past its end.`);
 			}
-			if (!hunks.some((hunk) => touches(hunk, pointer.lines))) {
-				const covered = hunks.map((hunk) => `${hunk.newStart}-${hunk.newStart + hunk.newLines - 1}`).join(', ');
+			if (!hunks.some((hunk) => touches(hunk, pointer.lines, side))) {
+				const covered = hunks.map((hunk) => linesOn(hunk, side)).map((lines) => `${lines.start}-${lines.end}`).join(', ');
 				throw new GuideError(pointer.field, `lines ${start}-${end} of ${path} are outside the diff, which covers lines ${covered}.`);
 			}
 		}
-		const visible = cutHunks(hunks, pointers.map((pointer) => pointer.lines));
+		const visible = cutHunks(hunks, pointers.map((pointer) => pointer.lines), side);
 		return {
 			path,
 			basePath,
