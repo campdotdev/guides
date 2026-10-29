@@ -16,16 +16,22 @@ export function initNarrowLayout(): void {
 	if (!stepsPane || !explanationPane) return;
 	const explanations = [...document.querySelectorAll<HTMLElement>('[data-explains]:not([data-explains="overview"])')];
 
+	// In a step's block, the block's header already names the step, so the explanation's heading is only for screen readers.
+	const hideHeadings = (hidden: boolean) => {
+		for (const explanation of explanations) explanation.querySelector('h2')?.classList.toggle('visually-hidden', hidden);
+	};
 	const stack = () => {
 		stepsPane.before(explanationPane);
 		for (const explanation of explanations) {
 			const toggle = stepsPane.querySelector(`[data-step="${explanation.dataset.explains}"] [data-step-toggle]`);
 			document.getElementById(toggle?.getAttribute('aria-controls') ?? '')?.before(explanation);
 		}
+		hideHeadings(true);
 	};
 	const unstack = () => {
 		stepsPane.after(explanationPane);
 		explanationPane.append(...explanations);
+		hideHeadings(false);
 	};
 
 	const narrow = window.matchMedia(NARROW);

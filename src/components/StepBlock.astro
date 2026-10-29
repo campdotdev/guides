@@ -3,6 +3,7 @@ import { reviewedCount } from '../client/reviewed-files.ts';
 import type { Step } from '../guide/load.ts';
 import FileDiff from './FileDiff.astro';
 import ImageDiff from './ImageDiff.astro';
+import LineCounts from './LineCounts.astro';
 
 interface Props {
 	step: Step;
@@ -24,11 +25,7 @@ const noneReviewed = reviewedCount(0, paths.length);
 		</h2>
 		<p class="step-meta">
 			<span>{fileCount}</span>
-			<span class="line-counts" aria-hidden="true">
-				<span class="additions">+{step.additions}</span>
-				<span class="deletions">-{step.deletions}</span>
-			</span>
-			<span class="visually-hidden">{step.additions} lines added, {step.deletions} removed</span>
+			<LineCounts additions={step.additions} deletions={step.deletions} />
 			<span data-reviewed-count>
 				<span aria-hidden="true">{noneReviewed.shown}</span>
 				<span class="visually-hidden">{noneReviewed.spoken}</span>
@@ -111,19 +108,6 @@ const noneReviewed = reviewedCount(0, paths.length);
 	.step-meta {
 		display: flex;
 		gap: 12px;
-	}
-
-	.line-counts {
-		display: inline-flex;
-		gap: 6px;
-	}
-
-	.additions {
-		color: var(--add-fg);
-	}
-
-	.deletions {
-		color: var(--del-fg);
 	}
 
 	.step-files {

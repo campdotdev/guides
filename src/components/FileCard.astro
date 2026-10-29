@@ -1,0 +1,72 @@
+---
+// One file in a step: a header with the file's path, its kind of change, and a Reviewed checkbox.
+// The default slot holds what the step shows of the file, such as its diff or its images.
+interface Props {
+	path: string;
+	/** The blob SHA that the file's Reviewed mark belongs to. */
+	blobSha: string;
+	/** A page-unique id for the path, which names the file's diff or images. */
+	id: string;
+	/** The kind of change, such as "New file". It has the id `<id>-kind`. */
+	kind: string;
+}
+const { path, blobSha, id, kind } = Astro.props;
+---
+
+<div class="file" data-file={path}>
+	<header class="file-header">
+		<span class="file-path" id={id}>{path}</span>
+		<span class="file-status" id={`${id}-kind`}>{kind}</span>
+		<label class="file-reviewed">
+			<input type="checkbox" data-reviewed data-path={path} data-blob-sha={blobSha} />
+			Reviewed<span class="visually-hidden"> {path}</span>
+		</label>
+	</header>
+	<slot />
+</div>
+
+<style>
+	.file {
+		margin-bottom: 12px;
+		overflow: hidden;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+	}
+
+	.file:last-child {
+		margin-bottom: 0;
+	}
+
+	.file-header {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 6px 12px;
+		border-bottom: 1px solid var(--border);
+		background: var(--surface);
+		font: 0.8125rem var(--mono);
+	}
+
+	.file-path {
+		margin-right: auto;
+		overflow-wrap: anywhere;
+	}
+
+	.file-status {
+		color: var(--muted);
+	}
+
+	.file-reviewed {
+		display: inline-flex;
+		flex: none;
+		gap: 4px;
+		align-items: center;
+		font-family: var(--sans);
+		cursor: pointer;
+	}
+
+	.file-reviewed input {
+		margin: 0;
+		accent-color: var(--accent);
+	}
+</style>

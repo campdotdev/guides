@@ -94,16 +94,5 @@ const { guide } = Astro.props;
 			padding: 12px 16px;
 			border-top: 1px solid var(--border);
 		}
-
-		/* The block's header already names the step, so the heading stays only for screen readers. */
-		.steps-pane :global([data-explains] > h2) {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			margin: -1px;
-			overflow: hidden;
-			clip-path: inset(50%);
-			white-space: nowrap;
-		}
 	}
 </style>

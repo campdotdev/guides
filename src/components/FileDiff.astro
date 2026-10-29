@@ -4,6 +4,7 @@ import type { DiffRow, Hunk } from '../guide/patch.ts';
 import { hunkHeader } from '../guide/patch.ts';
 import type { StepFile } from '../guide/resolve.ts';
 import { highlightLines, tokenStyle } from '../highlight.ts';
+import FileCard from './FileCard.astro';
 
 interface Props {
 	file: StepFile;
@@ -54,15 +55,7 @@ function separatorLabel(rows: DiffRow[]): string {
 }
 ---
 
-<div class="file" data-file={file.path}>
-	<header class="file-header">
-		<span class="file-path" id={id}>{file.path}</span>
-		<span class="file-status" id={`${id}-kind`}>{kind}</span>
-		<label class="file-reviewed">
-			<input type="checkbox" data-reviewed data-path={file.path} data-blob-sha={file.blobSha} />
-			Reviewed<span class="visually-hidden"> {file.path}</span>
-		</label>
-	</header>
+<FileCard path={file.path} blobSha={file.blobSha} id={id} kind={kind}>
 	<div class="diff-scroll">
 	<table class="diff" aria-labelledby={id} aria-describedby={`${id}-kind`}>
 		<thead class="visually-hidden">
@@ -113,53 +106,9 @@ function separatorLabel(rows: DiffRow[]): string {
 		}
 	</table>
 	</div>
-</div>
+</FileCard>
 
 <style>
-	.file {
-		margin-bottom: 12px;
-		overflow: hidden;
-		border: 1px solid var(--border);
-		border-radius: 6px;
-	}
-
-	.file:last-child {
-		margin-bottom: 0;
-	}
-
-	.file-header {
-		display: flex;
-		justify-content: space-between;
-		gap: 8px;
-		padding: 6px 12px;
-		border-bottom: 1px solid var(--border);
-		background: var(--surface);
-		font: 0.8125rem var(--mono);
-	}
-
-	.file-path {
-		margin-right: auto;
-		overflow-wrap: anywhere;
-	}
-
-	.file-status {
-		color: var(--muted);
-	}
-
-	.file-reviewed {
-		display: inline-flex;
-		flex: none;
-		gap: 4px;
-		align-items: center;
-		font-family: var(--sans);
-		cursor: pointer;
-	}
-
-	.file-reviewed input {
-		margin: 0;
-		accent-color: var(--accent);
-	}
-
 	.diff-scroll {
 		overflow-x: auto;
 	}

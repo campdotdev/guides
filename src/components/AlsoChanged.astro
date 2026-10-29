@@ -1,5 +1,6 @@
 ---
 import type { AlsoChangedFile } from '../guide/also-changed.ts';
+import LineCounts from './LineCounts.astro';
 
 interface Props {
 	/** The changed files that no block pointer names. */
@@ -24,15 +25,7 @@ const { files } = Astro.props;
 						{file.binary ? (
 							<span class="file-status">Binary</span>
 						) : (
-							<Fragment>
-								<span class="line-counts" aria-hidden="true">
-									<span class="additions">+{file.additions}</span>
-									<span class="deletions">-{file.deletions}</span>
-								</span>{' '}
-								<span class="visually-hidden">
-									{file.additions} lines added, {file.deletions} removed
-								</span>
-							</Fragment>
+							<LineCounts additions={file.additions} deletions={file.deletions} />
 						)}
 					</li>
 				))}
@@ -97,16 +90,4 @@ const { files } = Astro.props;
 		color: var(--muted);
 	}
 
-	.line-counts {
-		display: inline-flex;
-		gap: 6px;
-	}
-
-	.additions {
-		color: var(--add-fg);
-	}
-
-	.deletions {
-		color: var(--del-fg);
-	}
 </style>
