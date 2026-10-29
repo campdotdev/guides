@@ -1,0 +1,46 @@
+---
+interface Props {
+	/** The scopes to offer, in display order. */
+	scopes: string[];
+	/** The id of the list the filter narrows. */
+	list: string;
+}
+const { scopes, list } = Astro.props;
+---
+
+<form class="scope-filter" hidden>
+	<label for="scope-filter">Scope</label>
+	<select id="scope-filter" aria-controls={list} data-scope-filter>
+		<option value="">All scopes</option>
+		{scopes.map((scope) => <option value={scope}>{scope}</option>)}
+	</select>
+</form>
+
+<script>
+	import { initScopeFilter } from '../client/scope-filter.ts';
+
+	for (const select of document.querySelectorAll<HTMLSelectElement>('[data-scope-filter]')) initScopeFilter(select);
+</script>
+
+<style>
+	.scope-filter {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0 0 8px;
+		font-size: 0.875rem;
+	}
+
+	label {
+		font-weight: 600;
+	}
+
+	select {
+		padding: 4px 8px;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: var(--bg);
+		color: var(--fg);
+		font: inherit;
+	}
+</style>
