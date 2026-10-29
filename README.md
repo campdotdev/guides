@@ -64,7 +64,7 @@ The script reads the files through the production `github` source and checks eac
 
 `.github/workflows/deploy.yml` builds `main`'s renderer with the guides on `content` and deploys the site to GitHub Pages. It runs on every push to `main`. Only `main` may deploy to the `github-pages` environment, so a push to `content` runs that branch's `trigger-deploy.yml`, which dispatches `deploy.yml` on `main`.
 
-The workflow keeps `.cache/repo-files` between runs with `actions/cache`, so a deploy fetches only the files that no earlier deploy fetched.
+The workflow keeps `.cache/repo-files` between runs with `actions/cache`, so a deploy fetches only the files that no earlier deploy fetched. The cache key is a hash of the guides on `content`, so the workflow saves a new cache only when a guide changes.
 
 A malformed guide on `content` fails the deploy build, and the site keeps its last good deployment.
 

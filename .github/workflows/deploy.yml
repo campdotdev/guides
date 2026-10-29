@@ -22,11 +22,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Check out the guides from the content branch
         uses: actions/checkout@v7
         with:
           ref: content
           path: content
+          persist-credentials: false
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -34,12 +37,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # A file at a commit never changes, so cached files never go stale and the cache only grows.
-      # Each run saves a new entry and restores the newest one.
+      # The key is a hash of the guides. A run with the same guides reuses the cache and saves nothing,
+      # and a run with changed guides restores the newest cache and saves it under a new key.
       - name: Restore the repo file cache
         uses: actions/cache@v6
         with:
           path: .cache/repo-files
-          key: repo-files-${{ github.run_id }}-${{ github.run_attempt }}
+          key: repo-files-${{ hashFiles('content/*/*.md') }}
           restore-keys: repo-files-
       - name: Build the site
         run: pnpm build
