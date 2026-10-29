@@ -83,6 +83,31 @@ The page shows the diff rows from three lines before the range to three lines af
 
 A block pointer cannot name deleted lines. To show a deletion, point at the lines around it.
 
+A block pointer to an image file has no line range. [Image pointers](#image-pointers) describes it.
+
+## Image pointers
+
+A block pointer to an image file shows the image instead of a diff. It is a link with no text, alone on its line, like any block pointer, and it has no line range:
+
+```markdown
+[](apps/docs-tests/visual/fluted-glass.spec.ts-snapshots/fluted-glass-default-chromium-linux.png)
+```
+
+An image file is a file whose name ends in `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`. The file must be one the pull request changes between `baseSha` and `headSha`. A line range on an image pointer fails the build.
+
+The page shows the image at `baseSha` under "Before" and the image at `headSha` under "After". It shows only the versions that exist:
+
+| The pull request | The page shows |
+| --- | --- |
+| Changes the image | Before and After |
+| Adds the image | After |
+| Deletes the image | Before |
+| Renames the image | Before, at the old path, and After |
+
+A step shows its images after its hunks, in the order the step first points at each image. Image pointers and other block pointers share one count, so `steps.<n>.pointers.<m>` in a build error can name either kind.
+
+The build copies each image into the site, so the page never loads an image from GitHub.
+
 ## Inline pointers and links
 
 A link with text and a repository-relative target renders as a link to that path on GitHub at `headSha`. When the target has a line range, such as `[the export](packages/shaders/src/engine.ts#L70)`, the link is an inline pointer, and it links to those lines.
@@ -90,6 +115,14 @@ A link with text and a repository-relative target renders as a link to that path
 Any other link, such as a link to a glossary entry or an ADR, renders as an ordinary link.
 
 A link with no text fails the build unless it is a block pointer alone on its line.
+
+## Also changed
+
+After the last step, the left pane lists every file that the pull request changes and no block pointer names, under the heading "Also changed". The renderer builds the list from the pull request's file list, so a guide cannot leave a file off it. An inline pointer does not take a file off the list.
+
+Each entry shows the file's path, its status, and its added and removed line counts. An image file also shows a thumbnail of the image at `headSha`, or at `baseSha` for a deleted image.
+
+When block pointers name every changed file, the page has no "Also changed" section.
 
 ## Build errors
 

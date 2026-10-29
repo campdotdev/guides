@@ -16,3 +16,11 @@ test('the format reference documents the frontmatter, the overview, steps, and b
 		await expect(frontmatter.getByRole('cell', { name: field, exact: true })).toBeVisible();
 	}
 });
+
+test('the format reference documents image pointers and the "Also changed" section', async ({ page }) => {
+	await page.goto('/guides/format/');
+
+	for (const section of ['Image pointers', 'Also changed']) {
+		await expect(page.getByRole('heading', { level: 2, name: section, exact: true })).toBeVisible();
+	}
+});
