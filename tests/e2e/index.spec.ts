@@ -41,6 +41,19 @@ test('a repo page lists its guides newest first, each with its title, number, an
 	await expect(page.getByRole('heading', { level: 1, name: 'feat(shaders): add FlutedGlass' })).toBeVisible();
 });
 
+test('a guide page links back to its repo page, and the repo page links back to the home page', async ({ page }) => {
+	await page.goto('/guides/shaders/264/');
+
+	const guideTrail = page.getByRole('banner').getByRole('navigation', { name: 'Breadcrumb' });
+	await expect(guideTrail.getByRole('link', { name: 'Guides', exact: true })).toHaveAttribute('href', '/guides/');
+	await guideTrail.getByRole('link', { name: 'campdotdev/shaders', exact: true }).click();
+	await expect(page).toHaveURL('/guides/shaders/');
+
+	await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Guides', exact: true }).click();
+	await expect(page).toHaveURL('/guides/');
+	await expect(page.getByRole('heading', { level: 1, name: 'Guides' })).toBeVisible();
+});
+
 test('a guide without a scope lists no scope', async ({ page }) => {
 	await page.goto('/guides/bones/');
 

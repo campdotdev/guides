@@ -1,14 +1,22 @@
 ---
+import { homeUrl, repoUrl } from '../guide/catalog.ts';
+import { guideParams } from '../guide/load.ts';
 import type { GuideFrontmatter } from '../guide/schema.ts';
+import Breadcrumb from './Breadcrumb.astro';
 
 interface Props {
 	meta: GuideFrontmatter;
 }
 const { meta } = Astro.props;
 const github = `https://github.com/${meta.repo}`;
+const trail = [
+	{ label: 'Guides', href: homeUrl() },
+	{ label: meta.repo, href: repoUrl(guideParams(meta).repo) },
+];
 ---
 
 <header class="guide-header">
+	<Breadcrumb links={trail} />
 	<p class="guide-source">
 		<a href={`${github}/pull/${meta.pr}`}>{meta.repo}#{meta.pr}</a>
 		{meta.scope && <span class="guide-scope">{meta.scope}</span>}

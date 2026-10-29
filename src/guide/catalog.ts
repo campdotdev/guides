@@ -32,6 +32,11 @@ export function guidesByRepo(entries: CollectionEntry<'guides'>[]): RepoGuides[]
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 
+/** The URL of the home page, `/guides/`. */
+export function homeUrl(): string {
+	return `${BASE}/`;
+}
+
 /** The URL of a repo's page, such as `/guides/shaders/`. */
 export function repoUrl(slug: string): string {
 	return `${BASE}/${slug}/`;
