@@ -3,6 +3,7 @@
  *
  * A click, a key, and a `#step-<n>` anchor all select a step the same way.
  * The URL's anchor always names the selected step.
+ * The keys work only with focus inside the guide, so the key specs first put focus there.
  * The specs read the fixture guide at tests/fixtures/guides/shaders/264.md, which has three steps.
  */
 import type { Page } from '@playwright/test';
@@ -28,6 +29,11 @@ async function expectSelected(page: Page, n: number) {
 	await expect(page).toHaveURL(new RegExp(`#step-${n}$`));
 }
 
+/** Focuses step 1's header without selecting the step, the way a reader who tabs to it does. */
+async function focusGuide(page: Page) {
+	await page.getByRole('button', { name: STEPS[0] }).focus();
+}
+
 const WAYS_TO_SELECT_STEP_2: Record<string, (page: Page) => Promise<void>> = {
 	'opening the guide at #step-2': async (page) => {
 		await page.goto(`${GUIDE}#step-2`);
@@ -38,6 +44,7 @@ const WAYS_TO_SELECT_STEP_2: Record<string, (page: Page) => Promise<void>> = {
 	},
 	'pressing j twice': async (page) => {
 		await page.goto(GUIDE);
+		await focusGuide(page);
 		await page.keyboard.press('j');
 		await page.keyboard.press('j');
 	},
@@ -80,6 +87,7 @@ test('changing the anchor selects the step it names, and Back selects the previo
 
 test('j and k move one step at a time and stop at the first and last step', async ({ page }) => {
 	await page.goto(GUIDE);
+	await focusGuide(page);
 
 	// The overview comes before step 1, so k has nowhere to go.
 	await page.keyboard.press('k');
@@ -125,18 +133,44 @@ test('j and k still move between steps after the reader checks Reviewed', async 
 
 test('j and k with a modifier key leave the selection alone', async ({ page }) => {
 	await page.goto(GUIDE);
+	await focusGuide(page);
 
 	for (const key of ['Control+j', 'Meta+j', 'Control+k', 'Meta+k']) await page.keyboard.press(key);
 
 	await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
 });
 
-test('j and k move focus to the selected step’s header, the way a click does', async ({ page }) => {
+test('j and k do nothing while focus is outside the guide', async ({ page }) => {
 	await page.goto(GUIDE);
 
+	// Right after the page loads, focus is on the page itself.
 	await page.keyboard.press('j');
-	await expect(page.getByRole('button', { name: STEPS[0] })).toBeFocused();
+	await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
+
+	// The breadcrumb sits in the header, above the guide's main element.
+	await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Guides' }).focus();
 	await page.keyboard.press('j');
+
+	await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
+	await expect(page).toHaveURL(new RegExp(`${GUIDE}$`));
+});
+
+test('j and k work with focus in the explanation pane', async ({ page }) => {
+	await page.goto(`${GUIDE}#step-2`);
+	await page.getByRole('region', { name: 'Explanation' }).getByRole('link', { name: 'exports the primitive' }).focus();
+
+	await page.keyboard.press('j');
+
+	await expectSelected(page, 3);
+});
+
+test('j and k move focus to the selected step’s header, the way a click does', async ({ page }) => {
+	await page.goto(`${GUIDE}#step-2`);
+	await page.getByRole('checkbox', { name: 'Reviewed packages/shaders/src/engine.ts', exact: true }).focus();
+
+	await page.keyboard.press('j');
+	await expect(page.getByRole('button', { name: STEPS[2] })).toBeFocused();
+	await page.keyboard.press('k');
 	await expect(page.getByRole('button', { name: STEPS[1] })).toBeFocused();
 	await page.keyboard.press('k');
 	await expect(page.getByRole('button', { name: STEPS[0] })).toBeFocused();
