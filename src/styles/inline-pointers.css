@@ -1,0 +1,36 @@
+/* Inline pointers: a phrase in a step's explanation, and the diff rows it highlights. */
+
+:root {
+	--pointer-highlight: rgb(212 167 44 / 22%);
+	--pointer-bar: #bf8700;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--pointer-highlight: rgb(187 128 9 / 28%);
+		--pointer-bar: #d29922;
+	}
+}
+
+.prose a[data-pointer-file] {
+	border-radius: 2px;
+	color: inherit;
+	text-decoration: underline dotted var(--muted);
+	text-underline-offset: 0.25em;
+}
+
+/* The tint follows focus as well as hover, so the phrase stays paired with its lines after a click. */
+.prose a[data-pointer-file]:hover,
+.prose a[data-pointer-file]:focus {
+	background: var(--pointer-highlight);
+	text-decoration-color: var(--pointer-bar);
+}
+
+/* A cell's background paints over its row's, so the tint keeps an added or removed row's color underneath. */
+tr[data-highlighted] > td {
+	background-color: var(--pointer-highlight);
+}
+
+tr[data-highlighted] > td:first-child {
+	box-shadow: inset 3px 0 0 var(--pointer-bar);
+}

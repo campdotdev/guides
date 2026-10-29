@@ -1,0 +1,10 @@
+[
+	{
+		"path": "apps/demo/package.json",
+		"status": "modified",
+		"blobSha": "217a15498da3a57fa5dca68944b175c052fbb3b7",
+		"additions": 1,
+		"deletions": 1,
+		"patch": "@@ -4,7 +4,7 @@\n   \"private\": true,\n   \"scripts\": {\n     \"dev\": \"next dev\",\n-    \"build\": \"next build\",\n+    \"build\": \"pnpm --filter @lovo/bones build && next build\",\n     \"start\": \"next start\",\n     \"check\": \"tsc --noEmit\",\n     \"test\": \"vp test\""
+	}
+]

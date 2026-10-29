@@ -1,5 +1,5 @@
 import type { Root, RootContent } from 'mdast';
-import rehypeSanitize from 'rehype-sanitize';
+import rehypeSanitize, { defaultSchema, type Options as SanitizeSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
@@ -18,7 +18,19 @@ export interface ProseContext {
 	headSha: string;
 }
 
-const processor = unified().use(remarkRehype).use(rehypeSanitize).use(rehypeStringify);
+/**
+ * GitHub's schema, plus the attributes that `renderStepProse` puts on an inline pointer's link.
+ * The allowed URL protocols stay GitHub's, so a `javascript:` link still loses its href.
+ */
+const schema: SanitizeSchema = {
+	...defaultSchema,
+	attributes: {
+		...defaultSchema.attributes,
+		a: [...(defaultSchema.attributes?.a ?? []), 'dataPointerFile', 'dataPointerStart', 'dataPointerEnd'],
+	},
+};
+
+const processor = unified().use(remarkRehype).use(rehypeSanitize, schema).use(rehypeStringify);
 
 /**
  * Renders guide prose to HTML.

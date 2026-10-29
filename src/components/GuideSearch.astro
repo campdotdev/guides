@@ -1,0 +1,77 @@
+---
+// Search across every guide's prose. The script shows the form, because it does nothing without the script.
+---
+
+<div class="guide-search" data-guide-search hidden>
+	<form role="search">
+		<label for="guide-search-query">Search guides</label>
+		<input id="guide-search-query" type="search" autocomplete="off" spellcheck="false" />
+	</form>
+	<p class="search-status" role="status"></p>
+	<ol class="search-results" aria-label="Search results" data-search-results></ol>
+</div>
+
+<script>
+	import { initSearch } from '../client/search.ts';
+
+	for (const root of document.querySelectorAll<HTMLElement>('[data-guide-search]')) initSearch(root);
+</script>
+
+<style>
+	.guide-search {
+		margin: 24px 0 32px;
+	}
+
+	label {
+		display: block;
+		margin-bottom: 4px;
+		font-weight: 600;
+	}
+
+	input {
+		width: 100%;
+		padding: 8px 12px;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: var(--bg);
+		color: var(--fg);
+		font: inherit;
+	}
+
+	input:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -1px;
+	}
+
+	.search-status {
+		margin: 8px 0 0;
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+
+	.search-status:empty {
+		display: none;
+	}
+
+	.search-results {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.search-results :global(li) {
+		padding: 12px 0;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.search-results :global(.search-excerpt) {
+		margin: 2px 0 0;
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+
+	.search-results :global(mark) {
+		background: var(--hunk-bg);
+		color: inherit;
+	}
+</style>
