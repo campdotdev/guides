@@ -1,0 +1,56 @@
+---
+import type { StepImage } from '../guide/images.ts';
+import FileCard from './FileCard.astro';
+
+interface Props {
+	image: StepImage;
+	/** A page-unique id for the file's header. */
+	id: string;
+}
+const { image, id } = Astro.props;
+const sides = [
+	{ caption: 'Before', image: image.before },
+	{ caption: 'After', image: image.after },
+].filter((side) => side.image !== null);
+---
+
+<FileCard path={image.path} blobSha={image.blobSha} id={id} kind={image.status}>
+	<div class="image-pair" role="group" aria-labelledby={id}>
+		{
+			sides.map((side) => (
+				<figure>
+					<figcaption>{side.caption}</figcaption>
+					<img src={side.image!.src} alt={side.image!.alt} loading="lazy" decoding="async" />
+				</figure>
+			))
+		}
+	</div>
+</FileCard>
+
+<style>
+	.image-pair {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 12px;
+		padding: 12px;
+	}
+
+	figure {
+		margin: 0;
+	}
+
+	figcaption {
+		margin-bottom: 4px;
+		color: var(--muted);
+		font-size: 0.75rem;
+	}
+
+	/* A checkerboard behind the image shows where it is transparent. */
+	img {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		border: 1px solid var(--border);
+		background: repeating-conic-gradient(var(--surface) 0 25%, var(--bg) 0 50%) 0 0 / 16px 16px;
+	}
+</style>

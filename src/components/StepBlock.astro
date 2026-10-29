@@ -1,0 +1,129 @@
+---
+import { reviewedCount } from '../client/reviewed-files.ts';
+import type { Step } from '../guide/load.ts';
+import FileDiff from './FileDiff.astro';
+import ImageDiff from './ImageDiff.astro';
+import LineCounts from './LineCounts.astro';
+
+interface Props {
+	step: Step;
+}
+const { step } = Astro.props;
+const id = `step-${step.number}`;
+const paths = [...step.files, ...step.images].map((file) => file.path);
+const fileCount = `${paths.length} ${paths.length === 1 ? 'file' : 'files'}`;
+// The reviewed-files script fills in the reader's marks when the page loads.
+const noneReviewed = reviewedCount(0, paths.length);
+---
+
+<article class="step" id={id} data-step={step.number} aria-labelledby={`${id}-heading`}>
+	<div class="step-header">
+		<h2 id={`${id}-heading`} class="step-heading">
+			<button type="button" aria-expanded="false" aria-controls={`${id}-code`} data-step-toggle>
+				Step {step.number}: {step.title}
+			</button>
+		</h2>
+		<p class="step-meta">
+			<span>{fileCount}</span>
+			<LineCounts additions={step.additions} deletions={step.deletions} />
+			<span data-reviewed-count>
+				<span aria-hidden="true">{noneReviewed.shown}</span>
+				<span class="visually-hidden">{noneReviewed.spoken}</span>
+			</span>
+		</p>
+		<ul class="step-files">
+			{paths.map((path) => <li>{path}</li>)}
+		</ul>
+	</div>
+	<div id={`${id}-code`} class="step-code" hidden>
+		{step.files.map((file, index) => <FileDiff file={file} id={`${id}-file-${index + 1}`} />)}
+		{step.images.map((image, index) => <ImageDiff image={image} id={`${id}-image-${index + 1}`} />)}
+	</div>
+</article>
+
+<script>
+	import { initReviewedFiles } from '../client/reviewed-files.ts';
+	import { initStepSelection } from '../client/step-selection.ts';
+
+	initStepSelection();
+	// A step can show only images, so the Reviewed checkboxes load with the step, not with FileDiff.
+	initReviewedFiles();
+</script>
+
+<script>
+	import { initStepKeys } from '../client/step-keys.ts';
+	import { initStepLinks } from '../client/step-links.ts';
+
+	initStepLinks();
+	initStepKeys();
+</script>
+
+<style>
+	.step {
+		margin-bottom: 16px;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+	}
+
+	.step[data-selected] {
+		border-color: var(--accent);
+	}
+
+	.step-header {
+		position: relative;
+		padding: 12px 16px;
+	}
+
+	.step-heading {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	/* The button's hit area covers the whole header, so a click on the file list opens the step too. */
+	.step-heading button {
+		all: unset;
+		cursor: pointer;
+	}
+
+	.step-heading button::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: 8px;
+	}
+
+	.step-heading button:focus-visible::after {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+
+	.step-meta,
+	.step-files {
+		margin: 4px 0 0;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.8125rem;
+	}
+
+	.step-meta {
+		display: flex;
+		gap: 12px;
+	}
+
+	.step-files {
+		list-style: none;
+		font-family: var(--mono);
+		font-size: 0.75rem;
+	}
+
+	.step-files li {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.step-code {
+		padding: 12px;
+		border-top: 1px solid var(--border);
+	}
+</style>

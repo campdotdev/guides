@@ -1,0 +1,43 @@
+---
+// The trail from the home page down to the page that shows it. The current page is not in the trail.
+interface Props {
+	/** The pages above this one, from the home page down. */
+	links: { label: string; href: string }[];
+}
+const { links } = Astro.props;
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+	<ol>
+		{
+			links.map((link) => (
+				<li>
+					<a href={link.href}>{link.label}</a>
+				</li>
+			))
+		}
+	</ol>
+</nav>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 4px;
+		font-size: 0.875rem;
+	}
+
+	ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 6px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	/* The empty alternative text keeps screen readers from reading the separator. */
+	li + li::before {
+		content: '/' / '';
+		margin-right: 6px;
+		color: var(--muted);
+	}
+</style>

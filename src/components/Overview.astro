@@ -1,0 +1,20 @@
+---
+import type { Guide } from '../guide/load.ts';
+
+interface Props {
+	overview: Guide['overview'];
+}
+const { overview } = Astro.props;
+---
+
+<section class="panel prose" aria-labelledby="overview-heading" data-explains="overview">
+	<h2 id="overview-heading">Overview</h2>
+	{
+		overview.map((part) => (
+			<section aria-labelledby={`overview-${part.key}`}>
+				<h3 id={`overview-${part.key}`}>{part.heading}</h3>
+				<Fragment set:html={part.html} />
+			</section>
+		))
+	}
+</section>

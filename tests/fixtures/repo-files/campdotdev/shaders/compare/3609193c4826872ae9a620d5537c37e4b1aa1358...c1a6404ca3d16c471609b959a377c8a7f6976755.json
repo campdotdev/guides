@@ -1,0 +1,53 @@
+{
+	"mergeBaseSha": "3609193c4826872ae9a620d5537c37e4b1aa1358",
+	"files": [
+		{
+			"path": "AGENTS.md",
+			"status": "modified",
+			"blobSha": "ef25e31087edb5a5b3c92fb1661b32889a8833ca",
+			"additions": 2,
+			"deletions": 2,
+			"patch": "@@ -13,7 +13,7 @@ Shaders is a React shader component library built on WebGPU and Three.js TSL. Th\n \n - Specs, tickets, backlog, and status are in Linear, on the Shaders team. New work produces no spec file in the repo.\n - Decisions that outlive their ticket are in `docs/adr/`.\n-- The domain vocabulary is in `CONTEXT.md`. Use its terms in code, issues, and docs.\n+- The domain vocabulary is in `GLOSSARY.md`. Use its terms in code, issues, and docs.\n - Older implementation decisions are in git history.\n \n ## Read the doc for your task first\n@@ -65,7 +65,7 @@ The five canonical roles keep their default names as Linear labels. See `docs/ag\n \n ### Domain docs\n \n-Single-context: one `CONTEXT.md` and one `docs/adr/` at the repo root. See `docs/agents/domain.md`.\n+Single-context: one `GLOSSARY.md` and one `docs/adr/` at the repo root. See `docs/agents/domain.md`.\n \n ### Repo-local skills\n "
+		},
+		{
+			"path": "GLOSSARY.md",
+			"status": "renamed",
+			"blobSha": "cc4fd736ad9c33b97434f79ef84cc0e0f5f07f97",
+			"additions": 0,
+			"deletions": 0,
+			"basePath": "CONTEXT.md"
+		},
+		{
+			"path": "apps/docs/src/components/search/search.module.css",
+			"status": "modified",
+			"blobSha": "d96230d1bad42fdd7c4e2364574f5ce4c529f61f",
+			"additions": 1,
+			"deletions": 1,
+			"patch": "@@ -1,7 +1,7 @@\n /* The docs search after the Figma mock (SHA-155): the trigger in the header\n    and the Base UI search panel it opens over the blurred page. The portaled\n    panel owns its gutter and shares overlay-backdrop.module.css with the site\n-   nav. Names follow CONTEXT.md: trigger and panel. */\n+   nav. Names follow GLOSSARY.md: trigger and panel. */\n \n /* ---- The trigger ---- */\n "
+		},
+		{
+			"path": "apps/docs/src/components/search/search.tsx",
+			"status": "modified",
+			"blobSha": "c5f8cb27030b31dc5d15792ee1ac22efb740006b",
+			"additions": 1,
+			"deletions": 1,
+			"patch": "@@ -6,7 +6,7 @@\n  * owns modal behavior. use-panel-open.ts owns the open state, the shortcut,\n  * and focus return, use-highlight.ts the selected row, search-results.tsx\n  * what shows under the input, and use-search-backend.ts Pagefind and its\n- * fallback. Names follow CONTEXT.md: trigger and panel.\n+ * fallback. Names follow GLOSSARY.md: trigger and panel.\n  */\n import { useRouter } from 'next/navigation';\n import { useCallback, useRef, useState } from 'react';"
+		},
+		{
+			"path": "docs/agents/code-style.md",
+			"status": "modified",
+			"blobSha": "f39370e47c9f7cfd0bdbaa3c768bd67149abc257",
+			"additions": 1,
+			"deletions": 1,
+			"patch": "@@ -5,7 +5,7 @@ Read this before you write or edit code in `packages/` or `apps/`. ESLint, Prett\n ## Components and props\n \n - Destructure props in the component signature, and set defaults inline, as in `function MeshGradient({ speed = 2 }: MeshGradientProps)`. Order the destructured fields to match the interface.\n-- Name props with everyday words, not GPU jargon: `waviness` over `turbulence`, `coverage` or `radius` over `falloff`, and `balance` over `bias`. When two components share a concept, they share the name. `CONTEXT.md` defines the names for position props and reactions, such as `center` and `swellCenter`.\n+- Name props with everyday words, not GPU jargon: `waviness` over `turbulence`, `coverage` or `radius` over `falloff`, and `balance` over `bias`. When two components share a concept, they share the name. `GLOSSARY.md` defines the names for position props and reactions, such as `center` and `swellCenter`.\n - Add only what the task needs. A prop that does nothing on a component, added so its API matches another's, is still a prop to document and maintain. Grain and Dither take no `colorSpace`, because neither computes a midpoint between colors.\n - Use clear names over abbreviations such as `u`, `cfg`, `ctx`, or `cb`. Loop counters and math or shader locals that mirror the math, such as `x` and `y`, are the exceptions.\n - Use no emojis in code, comments, or strings."
+		},
+		{
+			"path": "docs/agents/domain.md",
+			"status": "modified",
+			"blobSha": "1ae92df669e9e9ad6b4bf1220806356192bf68a7",
+			"additions": 4,
+			"deletions": 4,
+			"patch": "@@ -1,10 +1,10 @@\n # Domain docs\n \n-How the engineering skills consume this repo's domain documentation. The layout is single-context: one `CONTEXT.md` and one `docs/adr/`, both at the repo root.\n+How the engineering skills consume this repo's domain documentation. The layout is single-context: one `GLOSSARY.md` and one `docs/adr/`, both at the repo root.\n \n ## Read these before you explore\n \n-- `CONTEXT.md` at the repo root. It defines the domain terms this project uses.\n+- `GLOSSARY.md` at the repo root. It defines the domain terms this project uses.\n - `docs/adr/`. Read the records that touch the area you are about to change.\n \n If either is missing, continue without comment. Do not flag the absence, and do not propose creating either up front. The `domain-modeling` skill creates them when a term or a decision actually resolves. `grill-with-docs` and `improve-codebase-architecture` both reach it.\n@@ -19,7 +19,7 @@ Check **Linear**, on the Shaders team, and the relevant records in **`docs/adr/`\n \n ```\n /\n-├── CONTEXT.md\n+├── GLOSSARY.md\n ├── docs/adr/\n │   ├── 0001-<slug>.md\n │   └── 0002-<slug>.md\n@@ -29,7 +29,7 @@ Check **Linear**, on the Shaders team, and the relevant records in **`docs/adr/`\n \n ## Use the glossary's vocabulary\n \n-When your output names a domain concept, use the term as `CONTEXT.md` defines it. This applies to issue titles, refactor proposals, hypotheses, and test names. Do not drift to a synonym the glossary avoids.\n+When your output names a domain concept, use the term as `GLOSSARY.md` defines it. This applies to issue titles, refactor proposals, hypotheses, and test names. Do not drift to a synonym the glossary avoids.\n \n If the concept is not in the glossary, treat that as a signal. Either you are inventing language the project does not use, which is worth reconsidering, or there is a real gap worth noting for `domain-modeling`.\n "
+		}
+	]
+}

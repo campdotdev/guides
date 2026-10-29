@@ -1,0 +1,29 @@
+---
+// Added and removed line counts: "+12 -3" on screen, and "12 lines added, 3 removed" for screen readers.
+interface Props {
+	additions: number;
+	deletions: number;
+}
+const { additions, deletions } = Astro.props;
+---
+
+<span class="line-counts" aria-hidden="true">
+	<span class="additions">+{additions}</span>
+	<span class="deletions">-{deletions}</span>
+</span>{' '}
+<span class="visually-hidden">{additions} lines added, {deletions} removed</span>
+
+<style>
+	.line-counts {
+		display: inline-flex;
+		gap: 6px;
+	}
+
+	.additions {
+		color: var(--add-fg);
+	}
+
+	.deletions {
+		color: var(--del-fg);
+	}
+</style>

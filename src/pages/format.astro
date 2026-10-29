@@ -1,0 +1,11 @@
+---
+// The format reference lives in docs/guide-format.md, so it reads as raw Markdown in the repository too.
+import { Content } from '../../docs/guide-format.md';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Guide file format">
+	<main class="doc prose">
+		<Content />
+	</main>
+</BaseLayout>

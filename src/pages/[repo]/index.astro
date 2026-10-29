@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import GuideList from '../../components/GuideList.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ScopeFilter from '../../components/ScopeFilter.astro';
+import { guidesByRepo, homeUrl, type RepoGuides } from '../../guide/catalog.ts';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+	const repos = guidesByRepo(await getCollection('guides'));
+	return repos.map((group) => ({ params: { repo: group.slug }, props: { group } }));
+}
+
+interface Props {
+	group: RepoGuides;
+}
+const { group } = Astro.props;
+---
+
+<BaseLayout title={`${group.repo} guides`}>
+	<main class="doc">
+		<Breadcrumb links={[{ label: 'Guides', href: homeUrl() }]} />
+		<h1>{group.repo}</h1>
+		<GuideList guides={group.guides}>
+			{group.scopes.length > 0 && <ScopeFilter scopes={group.scopes} list="guide-list" />}
+		</GuideList>
+	</main>
+</BaseLayout>

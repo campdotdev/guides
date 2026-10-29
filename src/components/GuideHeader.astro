@@ -1,0 +1,111 @@
+---
+import { guideParams, homeUrl, repoUrl } from '../guide/catalog.ts';
+import { pullRequestOf, type GuideFrontmatter } from '../guide/schema.ts';
+import { pullRequestName, shortSha } from '../repo-files/names.ts';
+import Breadcrumb from './Breadcrumb.astro';
+
+interface Props {
+	meta: GuideFrontmatter;
+}
+const { meta } = Astro.props;
+const github = `https://github.com/${meta.repo}`;
+const trail = [
+	{ label: 'Guides', href: homeUrl() },
+	{ label: meta.repo, href: repoUrl(guideParams(meta).repo) },
+];
+---
+
+<header class="guide-header">
+	<Breadcrumb links={trail} />
+	<p class="guide-source">
+		<a href={`${github}/pull/${meta.pr}`}>{pullRequestName(pullRequestOf(meta))}</a>
+		{meta.scope && <span class="guide-scope">{meta.scope}</span>}
+	</p>
+	<h1>{meta.title}</h1>
+	<p class="guide-commit">
+		Describes commit <a href={`${github}/commit/${meta.headSha}`}><code>{shortSha(meta.headSha)}</code></a>
+	</p>
+	{meta.afterTheFact && <p class="guide-note">Written after the fact from the diff, without the session’s reasoning.</p>}
+	<div
+		role="status"
+		data-stale-banner
+		data-pull-api={`https://api.github.com/repos/${meta.repo}/pulls/${meta.pr}`}
+		data-head-sha={meta.headSha}
+	>
+	</div>
+	<template data-stale-banner-template>
+		{/* Astro drops a line break between text and a tag, so each line breaks inside a run of text. */}
+		<p class="stale-banner">
+			<strong>The pull request has changed since this guide was written.</strong> The guide describes
+			commit <code>{shortSha(meta.headSha)}</code>, and the pull request’s head is
+			now <code data-current-head></code>. <a href={`${github}/pull/${meta.pr}`}>View the pull request on GitHub</a>
+		</p>
+	</template>
+</header>
+
+<script>
+	import { initStaleBanner } from '../client/stale-banner.ts';
+
+	void initStaleBanner();
+</script>
+
+<style>
+	.guide-header {
+		padding: 24px 32px 16px;
+		border-bottom: 1px solid var(--border);
+	}
+
+	/* The same width as the narrow layout in GuidePage.astro, whose panes have 16px of side padding. */
+	@media (width < 800px) {
+		.guide-header {
+			padding-inline: 16px;
+		}
+	}
+
+	h1 {
+		margin: 4px 0;
+		font-size: 1.6rem;
+		line-height: 1.3;
+	}
+
+	p {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+
+	code {
+		font-family: var(--mono);
+	}
+
+	.guide-scope {
+		margin-left: 8px;
+		padding: 0 8px;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+	}
+
+	.guide-note {
+		margin-top: 8px;
+		font-style: italic;
+	}
+
+	.stale-banner {
+		--attention-bg: #fff8c5;
+		--attention-border: #d4a72c;
+
+		margin-top: 12px;
+		padding: 8px 12px;
+		border: 1px solid var(--attention-border);
+		border-radius: 6px;
+		background: var(--attention-bg);
+		color: var(--fg);
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.stale-banner {
+			--attention-bg: rgb(187 128 9 / 15%);
+			--attention-border: rgb(187 128 9 / 40%);
+		}
+	}
+</style>
