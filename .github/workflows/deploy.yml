@@ -1,0 +1,59 @@
+# Builds main's renderer with the guides on the content branch and deploys the site to GitHub Pages.
+# A push to content runs that branch's trigger-deploy.yml, which dispatches this workflow on main.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Each job grants only the permissions it needs.
+permissions: {}
+
+# One deploy at a time. A newer run waits for the current one instead of canceling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check out the guides from the content branch
+        uses: actions/checkout@v7
+        with:
+          ref: content
+          path: content
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the site
+        run: pnpm build
+        env:
+          GUIDES_DIR: content
+          REPO_FILE_SOURCE: github
+          GITHUB_TOKEN: ${{ github.token }}
+          ASTRO_TELEMETRY_DISABLED: '1'
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
