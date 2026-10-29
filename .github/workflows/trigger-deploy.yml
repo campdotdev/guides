@@ -1,0 +1,30 @@
+# A push to content runs the workflows in content's tree, and only main may deploy to GitHub Pages.
+# So this workflow asks main's deploy.yml to rebuild the site with the new guides.
+name: Trigger deploy
+
+on:
+  push:
+    branches: [content]
+
+permissions:
+  actions: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deploy.yml on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # deploy.yml lands on main with the renderer. Until it does, there is nothing to dispatch.
+          if ! found=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy.yml" --jq .state 2>&1); then
+            if [[ "$found" == *"HTTP 404"* ]]; then
+              echo "::notice::main has no deploy.yml yet, so this push publishes nothing."
+              exit 0
+            fi
+            echo "$found" >&2
+            exit 1
+          fi
+          gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
