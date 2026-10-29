@@ -33,11 +33,20 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # A file at a commit never changes, so cached files never go stale and the cache only grows.
+      # Each run saves a new entry and restores the newest one.
+      - name: Restore the repo file cache
+        uses: actions/cache@v6
+        with:
+          path: .cache/repo-files
+          key: repo-files-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: repo-files-
       - name: Build the site
         run: pnpm build
         env:
           GUIDES_DIR: content
           REPO_FILE_SOURCE: github
+          REPO_FILE_CACHE: .cache/repo-files
           GITHUB_TOKEN: ${{ github.token }}
           ASTRO_TELEMETRY_DISABLED: '1'
       - uses: actions/configure-pages@v6

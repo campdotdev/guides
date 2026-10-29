@@ -1,0 +1,80 @@
+'use client';
+
+/**
+ * DotField demo island: the interactive slice of the DotField page — control
+ * store, shader preview, and control panel for the ripple's motion, grid,
+ * and color. The shared components/[slug] template renders this between its
+ * static header and prose sections.
+ */
+import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
+
+import {
+  ColorInput,
+  ControlPanel,
+  ControlsProvider,
+  createControlStore,
+  DemoLayout,
+  Section,
+  SliderInput,
+  useSnapshot,
+} from '@/components/controls';
+import { DemoPoster } from '@/components/DemoPoster';
+import { VisualTestPause } from '@/lib/visualTestHooks';
+
+import styles from './demo.module.css';
+import { INITIAL, type Params } from './params';
+
+const DotFieldScene = dynamic(() => import('./scene'), { ssr: false });
+
+function DotFieldDemo() {
+  const params = useSnapshot<Params>();
+
+  return (
+    <DemoPoster
+      alt="Dot field shader preview: a sparse grid of small gray dots on a dark background"
+      pixelSize={[2048, 1280]}
+      src="/posters/dot-field.png"
+    >
+      <DotFieldScene params={params}>
+        <VisualTestPause />
+      </DotFieldScene>
+    </DemoPoster>
+  );
+}
+
+function DotFieldControls() {
+  return (
+    <ControlPanel>
+      <Section title="Motion">
+        <SliderInput label="Speed" max={4} min={0} path="speed" step={0.05} />
+        <SliderInput label="Amplitude" max={0.9} min={0} path="amplitude" step={0.01} />
+        <SliderInput label="Wavelength" max={400} min={20} path="wavelength" step={5} />
+        <SliderInput label="Decay" max={5} min={0} path="decay" step={0.05} />
+      </Section>
+      <Section title="Grid">
+        <SliderInput label="Spacing" max={80} min={8} path="spacing" step={1} />
+        <SliderInput label="Dot size" max={8} min={1} path="dotSize" step={0.5} />
+        <SliderInput label="Center x" max={1} min={0} path="center.0" step={0.01} />
+        <SliderInput label="Center y" max={1} min={0} path="center.1" step={0.01} />
+      </Section>
+      <Section title="Color">
+        <ColorInput label="Color" path="color" />
+      </Section>
+    </ControlPanel>
+  );
+}
+
+export function DotFieldIsland() {
+  const store = useMemo(() => createControlStore<Params>(INITIAL), []);
+
+  return (
+    <ControlsProvider store={store}>
+      <DemoLayout controls={<DotFieldControls />}>
+        <div className={styles.demoBackdrop} data-shader-demo>
+          <DotFieldDemo />
+        </div>
+      </DemoLayout>
+    </ControlsProvider>
+  );
+}

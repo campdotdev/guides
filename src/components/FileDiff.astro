@@ -1,5 +1,5 @@
 ---
-import type { DiffRow } from '../guide/patch.ts';
+import type { DiffRow, Hunk } from '../guide/patch.ts';
 import { hunkHeader } from '../guide/patch.ts';
 import type { StepFile } from '../guide/resolve.ts';
 import { highlightLines, tokenStyle } from '../highlight.ts';
@@ -17,21 +17,53 @@ const tokensOf = (row: DiffRow) =>
 	(row.kind === 'del' ? baseLines[row.oldLine! - 1] : headLines[row.newLine! - 1]) ?? [
 		{ content: row.text, offset: 0 },
 	];
+/** How the file header names the kind of change, which is also the diff table's description. */
+const KIND: Partial<Record<StepFile['status'], string>> = {
+	added: 'New file',
+	removed: 'Deleted file',
+	renamed: `Renamed from ${file.basePath}`,
+	copied: `Copied from ${file.basePath}`,
+};
+const kind = KIND[file.status] ?? 'Modified';
 const MARKER = { add: '+', del: '-', context: ' ' } as const;
 const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
+
+/** The file's diff in page order: each hunk, with a separator before it and after the last one where rows are hidden. */
+type Segment = { kind: 'gap'; id: string; label: string; rows: DiffRow[] } | { kind: 'hunk'; hunk: Hunk; rows: DiffRow[] };
+const gap = (index: number): Segment[] => {
+	const rows = file.gaps[index] ?? [];
+	return rows.length === 0 ? [] : [{ kind: 'gap', id: `${id}-gap-${index + 1}`, label: separatorLabel(rows), rows }];
+};
+const segments: Segment[] = [
+	...file.hunks.flatMap((hunk, index): Segment[] => [...gap(index), { kind: 'hunk', hunk, rows: hunk.rows }]),
+	...gap(file.hunks.length),
+];
+
+/**
+ * Says how many lines a separator hides, and whether the diff changes them.
+ * Rows a pointer's cut leaves out of a hunk are changed lines, so not every separator hides unchanged lines.
+ */
+function separatorLabel(rows: DiffRow[]): string {
+	const lines = rows.length === 1 ? 'line' : 'lines';
+	const changed = rows.filter((row) => row.kind !== 'context').length;
+	if (changed === 0) return `${rows.length} unchanged ${lines}`;
+	if (rows.every((row) => row.kind === 'add')) return `${rows.length} more added ${lines}`;
+	if (rows.every((row) => row.kind === 'del')) return `${rows.length} more removed ${lines}`;
+	return `${rows.length} more ${lines}, ${changed} changed`;
+}
 ---
 
 <div class="file" data-file={file.path}>
 	<header class="file-header">
 		<span class="file-path" id={id}>{file.path}</span>
-		<span class="file-status">{file.status}</span>
+		<span class="file-status" id={`${id}-kind`}>{kind}</span>
 		<label class="file-reviewed">
 			<input type="checkbox" data-reviewed data-path={file.path} data-blob-sha={file.blobSha} />
 			Reviewed<span class="visually-hidden"> {file.path}</span>
 		</label>
 	</header>
 	<div class="diff-scroll">
-	<table class="diff" aria-labelledby={id}>
+	<table class="diff" aria-labelledby={id} aria-describedby={`${id}-kind`}>
 		<thead class="visually-hidden">
 			<tr>
 				<th scope="col">Base line</th>
@@ -41,25 +73,41 @@ const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 			</tr>
 		</thead>
 		{
-			file.hunks.map((hunk) => (
-				<tbody>
-					<tr class="hunk-header">
-						<td colspan="4">{hunkHeader(hunk)}</td>
-					</tr>
-					{hunk.rows.map((row) => (
-						<tr class={`row row-${row.kind}`} data-head-line={row.newLine}>
-							<td class="line-number">{row.oldLine}</td>
-							<td class="line-number">{row.newLine}</td>
-							<td class="marker">
-								<span aria-hidden="true">{MARKER[row.kind]}</span>
-								{SPOKEN[row.kind] && <span class="visually-hidden">{SPOKEN[row.kind]}</span>}
-							</td>
-							<td class="code">
-								{tokensOf(row).map((token) => <span style={tokenStyle(token)}>{token.content}</span>)}
-							</td>
-						</tr>
-					))}
-				</tbody>
+			segments.map((segment) => (
+				<Fragment>
+					{segment.kind === 'gap' && (
+						<tbody class="separator">
+							<tr>
+								<td colspan="4">
+									<button type="button" aria-expanded="false" aria-controls={segment.id} data-diff-context>
+										<span class="chevron" aria-hidden="true" />
+										{segment.label}
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					)}
+					<tbody id={segment.kind === 'gap' ? segment.id : undefined} hidden={segment.kind === 'gap'}>
+						{segment.kind === 'hunk' && (
+							<tr class="hunk-header">
+								<td colspan="4">{hunkHeader(segment.hunk)}</td>
+							</tr>
+						)}
+						{segment.rows.map((row) => (
+							<tr class={`row row-${row.kind}`} data-head-line={row.newLine}>
+								<td class="line-number">{row.oldLine}</td>
+								<td class="line-number">{row.newLine}</td>
+								<td class="marker">
+									<span aria-hidden="true">{MARKER[row.kind]}</span>
+									{SPOKEN[row.kind] && <span class="visually-hidden">{SPOKEN[row.kind]}</span>}
+								</td>
+								<td class="code">
+									{tokensOf(row).map((token) => <span style={tokenStyle(token)}>{token.content}</span>)}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</Fragment>
 			))
 		}
 	</table>
@@ -176,4 +224,48 @@ const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 		color: var(--muted);
 		white-space: pre;
 	}
+
+	.separator td {
+		padding: 0;
+		background: var(--hunk-bg);
+	}
+
+	.separator button {
+		all: unset;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		box-sizing: border-box;
+		width: 100%;
+		padding: 4px 8px;
+		color: var(--muted);
+		cursor: pointer;
+	}
+
+	.separator button:hover {
+		color: var(--accent);
+	}
+
+	.separator button:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+
+	.chevron {
+		width: 6px;
+		height: 6px;
+		border-right: 1.5px solid currentColor;
+		border-bottom: 1.5px solid currentColor;
+		transform: rotate(-45deg);
+	}
+
+	[aria-expanded='true'] > .chevron {
+		transform: rotate(45deg);
+	}
 </style>
+
+<script>
+	import { initDiffContext } from '../client/diff-context.ts';
+
+	initDiffContext();
+</script>

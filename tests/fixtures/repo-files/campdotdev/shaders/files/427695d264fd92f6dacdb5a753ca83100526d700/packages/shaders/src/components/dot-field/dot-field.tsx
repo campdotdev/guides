@@ -1,0 +1,98 @@
+'use client';
+
+// Public face of the dot field: owns the props, their JSDoc, and their
+// defaults, then delegates to DotFieldShader (./shader.tsx), which draws a
+// pixel-spaced grid of dots and ripples them outward from a center point.
+// Render it inside a <ShaderScene>; the gaps between dots are transparent,
+// so it can sit over other layers.
+import type { AnimatableProp } from '../../react/hooks/animatable-signal/animatable-signal.js';
+import type { DotShape } from './marks.js';
+import { DotFieldShader } from './shader.js';
+
+export type { DotShape, SvgMarkup } from './marks.js';
+
+export interface DotFieldProps {
+  /**
+   * The mark at each grid point, or a list of marks the field scatters
+   * across the grid. `'circle'` is a disk and `'cross'` is an x with
+   * flat-ended arms, and `{ svg }` is a custom mark from inline SVG markup,
+   * scaled so its `viewBox` fits `dotSize` on its longer side. Only the
+   * markup's alpha is read, so its fills are ignored and every mark takes
+   * `color`. `dotSize` is the mark's overall size in every case, so marks
+   * swap without retuning the grid. With a list, each cell draws one entry,
+   * chosen by a hash of its cell index, so the pick holds still from frame
+   * to frame, and names and `{ svg }` objects mix freely. A mark listed
+   * more than once is drawn that many times as often:
+   * `['cross', { svg: star }, { svg: star }]` is a confetti of crosses and
+   * about twice as many stars. A change rebuilds the shader. Defaults to
+   * `'circle'`.
+   */
+  shape?: DotShape | readonly DotShape[];
+  /**
+   * Grid cell size in pixels. Defaults to 30. Accepts a static value or an
+   * animation signal.
+   */
+  spacing?: AnimatableProp<number>;
+  /**
+   * Mark size in pixels: the diameter of a circle, the width of a cross
+   * from tip to tip, or the longer side of a custom mark's `viewBox`.
+   * Defaults to 3. Accepts a static value or an animation signal.
+   */
+  dotSize?: AnimatableProp<number>;
+  /** Dot color — hex, `oklch()`, or `oklab()`. Defaults to `'#8B918C'`. */
+  color?: string;
+  /**
+   * Ripple travel speed (rings expand faster as this grows). Defaults to
+   * 0.45. Accepts a static value or an animation signal.
+   */
+  speed?: AnimatableProp<number>;
+  /**
+   * Peak radial displacement, as a fraction of `spacing` (≈0–0.9). 0 = a
+   * static grid. Defaults to 0.15. Accepts a static value or an animation
+   * signal.
+   */
+  amplitude?: AnimatableProp<number>;
+  /**
+   * Distance between wave crests, in pixels. Defaults to 150. Accepts a
+   * static value or an animation signal.
+   */
+  wavelength?: AnimatableProp<number>;
+  /**
+   * How quickly ripples decay with distance from `center`. 0 = no decay
+   * (uniform field). Defaults to 0.65. Accepts a static value or an
+   * animation signal.
+   */
+  decay?: AnimatableProp<number>;
+  /**
+   * Ripple origin, 0..1 across the canvas; `[0.5, 0.5]` is centered and
+   * `[0, 0]` is the top-left corner. Defaults to `[0.5, 0.5]`. Accepts a
+   * static value or an animation signal.
+   */
+  center?: AnimatableProp<readonly [number, number]>;
+}
+
+export function DotField({
+  shape = 'circle',
+  spacing = 30,
+  dotSize = 3,
+  color = '#8B918C',
+  speed = 0.45,
+  amplitude = 0.15,
+  wavelength = 150,
+  decay = 0.65,
+  center = [0.5, 0.5],
+}: DotFieldProps) {
+  return (
+    <DotFieldShader
+      amplitude={amplitude}
+      center={center}
+      color={color}
+      decay={decay}
+      dotSize={dotSize}
+      shape={shape}
+      spacing={spacing}
+      speed={speed}
+      wavelength={wavelength}
+    />
+  );
+}
