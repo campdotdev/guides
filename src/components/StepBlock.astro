@@ -41,9 +41,11 @@ const fileCount = `${step.files.length} ${step.files.length === 1 ? 'file' : 'fi
 </script>
 
 <script>
+	import { initStepKeys } from '../client/step-keys.ts';
 	import { initStepLinks } from '../client/step-links.ts';
 
 	initStepLinks();
+	initStepKeys();
 </script>
 
 <style>
