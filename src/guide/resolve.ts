@@ -8,8 +8,10 @@ import {
 	type PullRequestRef,
 	type RepoFileSource,
 } from '../repo-files/index.ts';
+import { isBinary, type AlsoChangedFile } from './also-changed.ts';
 import { GuideError } from './errors.ts';
 import { cutHunks, hiddenRuns, linesOn, splitLines, touches, unchangedHunk, wholeFileRows, type Side } from './hunks.ts';
+import { imagePair, isImagePath, type StepImage } from './images.ts';
 import { parsePatch, type DiffRow, type Hunk } from './patch.ts';
 import type { ParsedStep } from './parse.ts';
 import type { Pointer } from './pointer.ts';
@@ -66,12 +68,49 @@ export class PullRequestFiles {
 		return Promise.all([...byPath].map(([path, pointers]) => this.#stepFile(path, pointers)));
 	}
 
+	/**
+	 * The image files a step's image pointers name, once per file, in the order the step first points at each one.
+	 * `pageUrl` is the guide page's URL, ending in `/`.
+	 */
+	stepImages(step: ParsedStep, pageUrl: string): StepImage[] {
+		const images = new Map<string, StepImage>();
+		for (const pointer of step.images) {
+			if (images.has(pointer.path)) continue;
+			const file = this.#changedFile(pointer.path, pointer.field);
+			images.set(pointer.path, {
+				path: file.path,
+				status: file.status,
+				blobSha: file.blobSha,
+				...imagePair(file, this.diff, pageUrl),
+			});
+		}
+		return [...images.values()];
+	}
+
+	/**
+	 * The changed files that no block pointer names, in the order GitHub lists them.
+	 * The list comes from the pull request's files, so the page shows every file the guide skips.
+	 */
+	alsoChanged(steps: ParsedStep[], pageUrl: string): AlsoChangedFile[] {
+		const covered = new Set(steps.flatMap((step) => [...step.pointers, ...step.images].map((pointer) => pointer.path)));
+		return this.changed
+			.filter((file) => !covered.has(file.path))
+			.map((file) => {
+				const images = isImagePath(file.path) ? imagePair(file, this.diff, pageUrl) : null;
+				return { ...file, thumbnail: images && (images.after ?? images.before), binary: isBinary(file) };
+			});
+	}
+
+	/** The changed file at `path`. Throws a GuideError that names `field` when the pull request does not change it. */
+	#changedFile(path: string, field: string): ChangedFile {
+		const changed = this.changed.find((file) => file.path === path);
+		if (!changed) throw new GuideError(field, `${path} is not a file that ${this.#name()} changes.`);
+		return changed;
+	}
+
 	async #stepFile(path: string, pointers: Pointer[]): Promise<StepFile> {
 		const [first] = pointers as [Pointer];
-		const changed = this.changed.find((file) => file.path === path);
-		if (!changed) {
-			throw new GuideError(first.field, `${path} is not a file that ${this.#name()} changes.`);
-		}
+		const changed = this.#changedFile(path, first.field);
 		// GitHub sends no patch for a binary file or for a file renamed without edits.
 		const pureRename = changed.previousPath !== undefined && changed.additions + changed.deletions === 0;
 		if (changed.patch === undefined && !pureRename) {

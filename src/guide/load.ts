@@ -1,9 +1,9 @@
 import type { CollectionEntry } from 'astro:content';
 import { repoFileSource, type ChangedFile, type RepoFileSource } from '../repo-files/index.ts';
-import { alsoChanged, type AlsoChangedFile } from './also-changed.ts';
+import type { AlsoChangedFile } from './also-changed.ts';
 import { guideUrl } from './catalog.ts';
 import { inGuide } from './errors.ts';
-import { stepImages, type StepImage } from './images.ts';
+import type { StepImage } from './images.ts';
 import { renderStepProse } from './inline-pointers.ts';
 import { OVERVIEW_PARTS, parseGuide, type OverviewKey } from './parse.ts';
 import { renderProse, type Html } from './prose.ts';
@@ -58,7 +58,7 @@ export async function loadGuide(
 					title: step.title,
 					html: renderStepProse(step, stepFiles, context),
 					files: stepFiles,
-					images: stepImages(step.images, files, pageUrl),
+					images: files.stepImages(step, pageUrl),
 					additions: rows.filter((row) => row.kind === 'add').length,
 					deletions: rows.filter((row) => row.kind === 'del').length,
 				};
@@ -69,7 +69,7 @@ export async function loadGuide(
 			overview: OVERVIEW_PARTS.map((part) => ({ ...part, html: renderProse(parsed.overview[part.key], context) })),
 			steps,
 			changedFiles: files.changed,
-			alsoChanged: alsoChanged(parsed.steps, files, pageUrl),
+			alsoChanged: files.alsoChanged(parsed.steps, pageUrl),
 		};
 	});
 }

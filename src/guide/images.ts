@@ -1,7 +1,4 @@
 import { fileVersions, type ChangedFile, type DiffCommits, type FileStatus, type FileVersion } from '../repo-files/index.ts';
-import { GuideError } from './errors.ts';
-import type { ImagePointer } from './pointer.ts';
-import type { PullRequestFiles } from './resolve.ts';
 
 /** The image files a guide shows as images, by extension, with the media type of each. */
 const IMAGE_TYPES: Record<string, string> = {
@@ -65,27 +62,4 @@ export interface StepImage extends ImagePair {
 	path: string;
 	status: FileStatus;
 	blobSha: string;
-}
-
-/**
- * Resolves a step's image pointers against the pull request's changed files, once per file, in the order the step
- * first points at each one. Throws a GuideError when a pointer names a file the pull request does not change.
- */
-export function stepImages(pointers: ImagePointer[], files: PullRequestFiles, pageUrl: string): StepImage[] {
-	const { pull } = files;
-	const images = new Map<string, StepImage>();
-	for (const pointer of pointers) {
-		if (images.has(pointer.path)) continue;
-		const file = files.changed.find((candidate) => candidate.path === pointer.path);
-		if (!file) {
-			throw new GuideError(pointer.field, `${pointer.path} is not a file that ${pull.owner}/${pull.repo}#${pull.pr} changes.`);
-		}
-		images.set(pointer.path, {
-			path: file.path,
-			status: file.status,
-			blobSha: file.blobSha,
-			...imagePair(file, files.diff, pageUrl),
-		});
-	}
-	return [...images.values()];
 }
