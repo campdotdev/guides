@@ -31,14 +31,14 @@ const MARKER = { add: '+', del: '-', context: ' ' } as const;
 const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 
 /** The file's diff in page order: each hunk, with a separator before it and after the last one where rows are hidden. */
-type Segment = { kind: 'gap'; id: string; label: string; rows: DiffRow[] } | { kind: 'hunk'; hunk: Hunk; rows: DiffRow[] };
-const gap = (index: number): Segment[] => {
-	const rows = file.gaps[index] ?? [];
-	return rows.length === 0 ? [] : [{ kind: 'gap', id: `${id}-gap-${index + 1}`, label: separatorLabel(rows), rows }];
+type Segment = { kind: 'hidden'; id: string; label: string; rows: DiffRow[] } | { kind: 'hunk'; hunk: Hunk; rows: DiffRow[] };
+const hidden = (index: number): Segment[] => {
+	const rows = file.hidden[index] ?? [];
+	return rows.length === 0 ? [] : [{ kind: 'hidden', id: `${id}-hidden-${index + 1}`, label: separatorLabel(rows), rows }];
 };
 const segments: Segment[] = [
-	...file.hunks.flatMap((hunk, index): Segment[] => [...gap(index), { kind: 'hunk', hunk, rows: hunk.rows }]),
-	...gap(file.hunks.length),
+	...file.hunks.flatMap((hunk, index): Segment[] => [...hidden(index), { kind: 'hunk', hunk, rows: hunk.rows }]),
+	...hidden(file.hunks.length),
 ];
 
 /**
@@ -69,11 +69,11 @@ function separatorLabel(rows: DiffRow[]): string {
 		{
 			segments.map((segment) => (
 				<Fragment>
-					{segment.kind === 'gap' && (
+					{segment.kind === 'hidden' && (
 						<tbody class="separator">
 							<tr>
 								<td colspan="4">
-									<button type="button" aria-expanded="false" aria-controls={segment.id} data-diff-context>
+									<button type="button" aria-expanded="false" aria-controls={segment.id} data-separator>
 										<span class="chevron" aria-hidden="true" />
 										{segment.label}
 									</button>
@@ -81,7 +81,7 @@ function separatorLabel(rows: DiffRow[]): string {
 							</tr>
 						</tbody>
 					)}
-					<tbody id={segment.kind === 'gap' ? segment.id : undefined} hidden={segment.kind === 'gap'}>
+					<tbody id={segment.kind === 'hidden' ? segment.id : undefined} hidden={segment.kind === 'hidden'}>
 						{segment.kind === 'hunk' && (
 							<tr class="hunk-header">
 								<td colspan="4">{hunkHeader(segment.hunk)}</td>
@@ -209,7 +209,7 @@ function separatorLabel(rows: DiffRow[]): string {
 </style>
 
 <script>
-	import { initDiffContext } from '../client/diff-context.ts';
+	import { initSeparators } from '../client/separators.ts';
 
-	initDiffContext();
+	initSeparators();
 </script>

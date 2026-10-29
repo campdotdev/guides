@@ -33,9 +33,9 @@ export interface StepFile {
 	hunks: Hunk[];
 	/**
 	 * The rows of the file's diff that `hunks` leave out, which separators hide until the reader expands them.
-	 * `gaps[i]` comes before `hunks[i]`, and the last entry comes after the last hunk. A gap can be empty.
+	 * `hidden[i]` comes before `hunks[i]`, and the last entry comes after the last hunk. A run can be empty.
 	 */
-	gaps: DiffRow[][];
+	hidden: DiffRow[][];
 }
 
 /**
@@ -144,7 +144,7 @@ export class PullRequestFiles {
 			base,
 			head,
 			hunks: visible,
-			gaps: hiddenRuns(wholeFileRows(hunks, head), visible),
+			hidden: hiddenRuns(wholeFileRows(hunks, head), visible),
 		};
 	}
 

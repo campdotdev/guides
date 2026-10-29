@@ -1,12 +1,12 @@
 import { controlledElement } from './controls.ts';
 
 /**
- * Diff context: separators hide the lines of a file's diff around and between the hunks a step shows.
+ * Separators: a separator hides the rows of a file's diff around and between the hunks a step shows.
  * Clicking a separator shows its lines, and clicking it again hides them.
  */
-export function initDiffContext(): void {
+export function initSeparators(): void {
 	document.addEventListener('click', (event) => {
-		const separator = (event.target as Element | null)?.closest<HTMLElement>('[data-diff-context]');
+		const separator = (event.target as Element | null)?.closest<HTMLElement>('[data-separator]');
 		if (!separator) return;
 		const rows = controlledElement(separator);
 		if (!rows) return;
