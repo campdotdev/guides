@@ -50,6 +50,30 @@ test('each step block’s header counts its reviewed files', async ({ page }) =>
 	await expectCount(step1, '0/2 reviewed', '0 of 2 files reviewed');
 });
 
+test('a mark on a file shows in every step that shows the file', async ({ page }) => {
+	// Both steps of the #241 fixture guide show favorites-list.tsx at the head commit's blob SHA.
+	const STEP_1_241 = 'Step 1: Render the card poster without sizes';
+	const STEP_2_241 = 'Step 2: Delete POSTER_SIZES';
+	const step1 = page.getByRole('article', { name: STEP_1_241 });
+	const step2 = page.getByRole('article', { name: STEP_2_241 });
+	const reviewedIn = (step: Locator) =>
+		step.getByRole('checkbox', { name: 'Reviewed apps/docs/src/components/favorites/favorites-list.tsx', exact: true });
+	await page.goto('/guides/shaders/241/');
+
+	await page.getByRole('button', { name: STEP_1_241 }).click();
+	await reviewedIn(step1).check();
+	await expectCount(step2, '1/1 reviewed', '1 of 1 file reviewed');
+	await page.getByRole('button', { name: STEP_2_241 }).click();
+	await expect(reviewedIn(step2)).toBeChecked();
+
+	await reviewedIn(step2).uncheck();
+	await expectCount(step1, '0/1 reviewed', '0 of 1 file reviewed');
+	// The reload keeps #step-2 in the URL, so step 2 opens again.
+	await page.reload();
+	await expect(reviewedIn(step2)).not.toBeChecked();
+	await expectCount(step1, '0/1 reviewed', '0 of 1 file reviewed');
+});
+
 /**
  * tests/fixtures/previous-head holds the same guide pinned to f09b489, the pull request's previous head.
  * The last commit, 84cc417, changed flute-surface.ts and left engine.ts alone,

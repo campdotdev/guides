@@ -5,6 +5,7 @@
  * `guides:reviewed:campdotdev/shaders#264:packages/shaders/src/engine.ts@<blob SHA>`.
  * A refreshed guide that shows the file at a new blob SHA looks up a different key,
  * so the file shows unchecked until the reader reviews it again, the way GitHub's Viewed checkbox works.
+ * A file that several steps show has one box in each step, and checking any of them checks them all.
  *
  * Every checkbox with `data-reviewed`, `data-path`, and `data-blob-sha` takes part.
  * The page names its pull request in a `data-pull` attribute, such as `campdotdev/shaders#264`.
@@ -25,15 +26,17 @@ export function initReviewedFiles(): void {
 	const pull = document.querySelector<HTMLElement>('[data-pull]')?.dataset.pull;
 	if (!pull) return;
 	const keyOf = (box: HTMLInputElement) => reviewedKey(pull, box.dataset.path!, box.dataset.blobSha!);
+	const boxes = () => document.querySelectorAll<HTMLInputElement>('input[data-reviewed]');
 
-	for (const box of document.querySelectorAll<HTMLInputElement>('input[data-reviewed]')) {
-		box.checked = read(keyOf(box));
-	}
+	for (const box of boxes()) box.checked = read(keyOf(box));
 	renderCounts();
 	document.addEventListener('change', (event) => {
 		const box = event.target;
 		if (!(box instanceof HTMLInputElement) || !box.hasAttribute('data-reviewed')) return;
-		write(keyOf(box), box.checked);
+		const key = keyOf(box);
+		write(key, box.checked);
+		// Several steps can show one file. Every box for the file shows the same mark.
+		for (const other of boxes()) if (keyOf(other) === key) other.checked = box.checked;
 		renderCounts();
 	});
 }
