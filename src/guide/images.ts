@@ -44,11 +44,21 @@ export function imageFileParam(version: FileVersion): string {
 }
 
 /**
+ * The versions of a changed file that the site shows as images. A version at a path that is not an image file, such
+ * as the SVG side of a rename to PNG, is left out, so the build never publishes it.
+ */
+export function imageVersions(file: ChangedFile, diff: DiffCommits): { base: FileVersion | null; head: FileVersion | null } {
+	const { base, head } = fileVersions(file, diff);
+	const shown = (version: FileVersion | null) => (version && isImagePath(version.path) ? version : null);
+	return { base: shown(base), head: shown(head) };
+}
+
+/**
  * The images of a changed image file, before at the merge base and after at the head commit.
  * `pageUrl` is the guide page's URL, ending in `/`.
  */
 export function imagePair(file: ChangedFile, diff: DiffCommits, pageUrl: string): ImagePair {
-	const { base, head } = fileVersions(file, diff);
+	const { base, head } = imageVersions(file, diff);
 	const image = (version: FileVersion, when: 'before' | 'after'): PageImage => ({
 		src: `${pageUrl}images/${imageFileParam(version).split('/').map(encodeURIComponent).join('/')}`,
 		alt: `${version.path} ${when} the change`,

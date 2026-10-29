@@ -134,6 +134,7 @@ The page shows the image at the merge base under "Before" and the image at `head
 | Adds the image | After |
 | Deletes the image | Before |
 | Renames the image | Before, at the old path, and After |
+| Renames a file that is not an image, such as an SVG, to an image | After |
 
 A step shows its images after its hunks, in the order the step first points at each image. Image pointers and other block pointers share one count, so `steps.<n>.pointers.<m>` in a build error can name either kind.
 
@@ -162,6 +163,8 @@ The overview has no code to highlight, so a link there with a line range renders
 ## Other links
 
 A link with text and a repository-relative target with no line range renders as a link to that path on GitHub at `headSha`.
+
+A reference-style link, such as `[the ADR][adr]` with the line `[adr]: docs/adr/0004.md`, resolves the same way. Put the definition in the same overview part or step as the link, because the page renders each part and each step on its own.
 
 Any other link, such as a link to a glossary entry or an ADR, renders as an ordinary link.
 

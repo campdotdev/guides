@@ -40,8 +40,11 @@ const processor = unified().use(remarkRehype).use(rehypeSanitize, schema).use(re
  */
 export function renderProse(nodes: RootContent[], context: ProseContext): Html {
 	const tree: Root = { type: 'root', children: structuredClone(nodes) };
-	visit(tree, 'link', (link) => {
-		if (isRepoRelative(link.url)) link.url = blobUrl(context.repo, context.headSha, link.url);
+	// A reference-style link takes its URL from a definition node, so rewrite definitions too.
+	visit(tree, (node) => {
+		if ((node.type === 'link' || node.type === 'definition') && isRepoRelative(node.url)) {
+			node.url = blobUrl(context.repo, context.headSha, node.url);
+		}
 	});
 	return processor.stringify(processor.runSync(tree));
 }

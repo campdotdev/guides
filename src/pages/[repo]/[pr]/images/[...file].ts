@@ -1,9 +1,9 @@
 import type { APIRoute, GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getCollection } from 'astro:content';
-import { imageFileParam, imageType, isImagePath } from '../../../../guide/images.ts';
+import { imageFileParam, imageType, imageVersions, isImagePath } from '../../../../guide/images.ts';
 import { guideParams } from '../../../../guide/catalog.ts';
 import { pullRequestOf } from '../../../../guide/schema.ts';
-import { diffCommits, fileVersions, pullRequestName, repoFileSource } from '../../../../repo-files/index.ts';
+import { diffCommits, pullRequestName, repoFileSource } from '../../../../repo-files/index.ts';
 
 /**
  * Writes each changed image of each guide's pull request into the build, at the merge base and the head commit where
@@ -20,7 +20,7 @@ export const getStaticPaths = (async () => {
 			return comparison.files
 				.filter((file) => isImagePath(file.path))
 				.flatMap((file) => {
-					const { base, head } = fileVersions(file, diff);
+					const { base, head } = imageVersions(file, diff);
 					return [base, head].filter((version) => version !== null);
 				})
 				.map((version) => ({
