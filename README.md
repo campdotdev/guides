@@ -16,11 +16,13 @@ You need Node 24 and pnpm 11.
 ```sh
 pnpm install
 pnpm exec playwright install chromium   # once, for pnpm test
-pnpm dev     # serves the fixture guide at http://localhost:4321/guides/shaders/264/
-pnpm build   # writes the static site to dist/
+pnpm dev     # serves the fixture guides at http://localhost:4321/guides/
+pnpm build   # writes the static site and its Pagefind search index to dist/
 pnpm check   # type-checks the project
 pnpm test    # builds the site from the fixtures, serves it, and runs the Playwright specs
 ```
+
+Search on the home page reads the index that `pnpm build` writes, so `pnpm dev` has no search results. To try search, run `pnpm build && pnpm preview`.
 
 If another server already holds port 4321, pick another port for the tests, such as `PLAYWRIGHT_PORT=4400 pnpm test`.
 
@@ -43,7 +45,7 @@ GUIDES_DIR=content REPO_FILE_SOURCE=github GITHUB_TOKEN=$(gh auth token) pnpm bu
 
 ## Tests
 
-The specs in `tests/e2e` drive the built site in Chromium and assert through roles and accessible names. They read the fixture guides in `tests/fixtures/guides`, which the test suite owns, so the sample guide on `content` can change without breaking them. Each guide in `tests/fixtures/malformed` must fail the build with an error that names the bad field.
+The specs in `tests/e2e` drive the built site in Chromium and assert through roles and accessible names. They read the fixture guides in `tests/fixtures/guides`, which the test suite owns, so the sample guide on `content` can change without breaking them. The search specs query the real Pagefind index that the build writes. Each guide in `tests/fixtures/malformed` must fail the build with an error that names the bad field.
 
 The `fixture` source serves each fixture guide's files from `tests/fixtures/repo-files`, a snapshot of the pull request at its base and head commits. The tests never touch the network. To record the snapshot for a new fixture guide, run:
 

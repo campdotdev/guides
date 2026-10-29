@@ -15,7 +15,7 @@ Markdown files at the top level of the branch, such as `README.md`, are not guid
 | `repo` | string | Yes | The repository, as `owner/name`. The name is the folder the file sits in. |
 | `pr` | positive integer | Yes | The pull request number. The file's name is this number plus `.md`. |
 | `title` | string | Yes | The pull request title, which is a Conventional Commit. The page shows it as its heading. |
-| `scope` | string | No | The Conventional Commit scope of the title. |
+| `scope` | string | No | The Conventional Commit scope of the title. The repo's page can filter its guides by scope. |
 | `baseSha` | commit SHA | Yes | The commit the pull request is based on. |
 | `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. |
 | `afterTheFact` | boolean | No | `true` when the guide was written from the diff after the session ended. The page then says it lacks the session's reasoning. Defaults to `false`. |
@@ -39,6 +39,8 @@ afterTheFact: true
 The body is a list of second-level sections. `## Overview` comes first, and every section after it is a step. The body has no text before `## Overview` and no first-level heading.
 
 Raw HTML does not render.
+
+The site's search indexes the overview and the steps' prose. It does not index the code that block pointers show.
 
 ## Overview
 
