@@ -23,11 +23,12 @@ const { guide } = Astro.props;
 		</style>
 	</noscript>
 	<GuideHeader meta={guide.meta} />
-	<main class="guide">
+	<main class="guide" data-pull={`${guide.meta.repo}#${guide.meta.pr}`}>
 		<section class="steps-pane" aria-label="Steps">
 			{guide.steps.map((step) => <StepBlock step={step} />)}
 		</section>
-		<section class="explanation-pane" aria-label="Explanation">
+		{/* Search indexes the prose in this pane. Pagefind skips pages without data-pagefind-body. */}
+		<section class="explanation-pane" aria-label="Explanation" data-pagefind-body>
 			<Overview overview={guide.overview} />
 			{guide.steps.map((step) => <StepExplanation step={step} />)}
 		</section>

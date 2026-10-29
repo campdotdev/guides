@@ -4,6 +4,6 @@ dist/
 test-results/
 playwright-report/
 # The deploy workflow checks out the content branch here.
-content/
+/content/
 # REPO_FILE_CACHE, when a local build sets it to .cache/repo-files.
 .cache/

@@ -57,6 +57,10 @@ function separatorLabel(rows: DiffRow[]): string {
 	<header class="file-header">
 		<span class="file-path" id={id}>{file.path}</span>
 		<span class="file-status" id={`${id}-kind`}>{kind}</span>
+		<label class="file-reviewed">
+			<input type="checkbox" data-reviewed data-path={file.path} data-blob-sha={file.blobSha} />
+			Reviewed<span class="visually-hidden"> {file.path}</span>
+		</label>
 	</header>
 	<div class="diff-scroll">
 	<table class="diff" aria-labelledby={id} aria-describedby={`${id}-kind`}>
@@ -90,7 +94,7 @@ function separatorLabel(rows: DiffRow[]): string {
 							</tr>
 						)}
 						{segment.rows.map((row) => (
-							<tr class={`row row-${row.kind}`}>
+							<tr class={`row row-${row.kind}`} data-head-line={row.newLine}>
 								<td class="line-number">{row.oldLine}</td>
 								<td class="line-number">{row.newLine}</td>
 								<td class="marker">
@@ -109,6 +113,12 @@ function separatorLabel(rows: DiffRow[]): string {
 	</table>
 	</div>
 </div>
+
+<script>
+	import { initReviewedFiles } from '../client/reviewed-files.ts';
+
+	initReviewedFiles();
+</script>
 
 <style>
 	.file {
@@ -133,11 +143,26 @@ function separatorLabel(rows: DiffRow[]): string {
 	}
 
 	.file-path {
+		margin-right: auto;
 		overflow-wrap: anywhere;
 	}
 
 	.file-status {
 		color: var(--muted);
+	}
+
+	.file-reviewed {
+		display: inline-flex;
+		flex: none;
+		gap: 4px;
+		align-items: center;
+		font-family: var(--sans);
+		cursor: pointer;
+	}
+
+	.file-reviewed input {
+		margin: 0;
+		accent-color: var(--accent);
 	}
 
 	.diff-scroll {

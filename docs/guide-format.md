@@ -15,9 +15,9 @@ Markdown files at the top level of the branch, such as `README.md`, are not guid
 | `repo` | string | Yes | The repository, as `owner/name`. The name is the folder the file sits in. |
 | `pr` | positive integer | Yes | The pull request number. The file's name is this number plus `.md`. |
 | `title` | string | Yes | The pull request title, which is a Conventional Commit. The page shows it as its heading. |
-| `scope` | string | No | The Conventional Commit scope of the title. |
+| `scope` | string | No | The Conventional Commit scope of the title. The repo's page can filter its guides by scope. |
 | `baseSha` | commit SHA | Yes | The commit the pull request is based on. |
-| `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. |
+| `headSha` | commit SHA | Yes | The head commit the guide describes. Pointer line numbers refer to this commit. When the pull request's head differs from it, the page shows a banner that names this commit and links to the pull request. |
 | `afterTheFact` | boolean | No | `true` when the guide was written from the diff after the session ended. The page then says it lacks the session's reasoning. Defaults to `false`. |
 
 A commit SHA is the full 40-character lowercase hex SHA. A field the table does not list fails the build.
@@ -39,6 +39,8 @@ afterTheFact: true
 The body is a list of second-level sections. `## Overview` comes first, and every section after it is a step. The body has no text before `## Overview` and no first-level heading.
 
 Raw HTML does not render.
+
+The site's search indexes the overview and the steps' prose. It does not index the code that block pointers show.
 
 ## Overview
 
@@ -111,9 +113,29 @@ A block pointer into a file that the pull request adds, deletes, or renames work
 
 A pointer that names a renamed file's old path fails the build, because the pull request changes no file at that path.
 
-## Inline pointers and links
+## Inline pointers
 
-A link with text and a repository-relative target renders as a link to that path on GitHub at `headSha`. When the target has a line range, such as `[the export](packages/shaders/src/engine.ts#L70)`, the link is an inline pointer, and it links to those lines.
+An inline pointer is a link inside a step's prose. Its text is a phrase, and its target is a repository-relative path with a line range:
+
+```markdown
+The engine [exports the primitive](packages/shaders/src/engine.ts#L70-L74) for Mode 2.
+```
+
+The path and the line range follow the block pointer rules. In a step's prose, any repository-relative target whose fragment starts with `L` and a digit is an inline pointer, so a malformed range, such as `#L10-20`, fails the build.
+
+Every line in the range must be one that the step's own block pointers show, context lines included. An inline pointer fails the build when it names a line that only another step shows, or a line past a block pointer's context. An inline pointer cannot name deleted lines.
+
+On the page, an inline pointer is a phrase with a dotted underline:
+
+- Hovering or focusing the phrase highlights its lines in the step's code.
+- Clicking the phrase opens the step's block if it is closed and scrolls the lines into view. The lines stay highlighted until the phrase loses focus.
+- The link's target is the lines on GitHub at `headSha`. A modified click, such as Cmd-click, opens it.
+
+The overview has no code to highlight, so a link there with a line range renders as a link to the lines on GitHub. To link lines that no step shows, such as unchanged code, use a full GitHub URL.
+
+## Other links
+
+A link with text and a repository-relative target with no line range renders as a link to that path on GitHub at `headSha`.
 
 Any other link, such as a link to a glossary entry or an ADR, renders as an ordinary link.
 
@@ -139,6 +161,7 @@ A frontmatter error names the field the same way, such as `headSha: Expected a f
 | `steps.<n>` | Step `n`'s title or prose. |
 | `steps.<n>.pointers` | Step `n` has no block pointer. |
 | `steps.<n>.pointers.<m>` | Block pointer `m` in step `n`. |
+| `steps.<n>.inlinePointers.<m>` | Inline pointer `m` in step `n`, counted in reading order. |
 
 Step and pointer numbers start at 1, like the step numbers on the page.
 
@@ -175,7 +198,7 @@ A UV warp mounted before FlutedGlass hands the glass a coordinate it already mov
 
 ## Shape each flute in one primitive
 
-`fluteSurface` works out how steep the glass is and how far it moves the image, in one call. The engine exports it for Mode 2.
+`fluteSurface` works out how steep the glass is and how far it moves the image, in one call. The engine [exports it](packages/shaders/src/engine.ts#L70-L74) for Mode 2.
 
 [](packages/shaders/src/primitives/flute-surface/flute-surface.ts#L108-L115)
 
