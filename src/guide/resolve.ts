@@ -1,4 +1,4 @@
-import type { ChangedFile, FileStatus, PullRequestRef, RepoFileSource } from '../repo-files/index.ts';
+import { fileVersions, type ChangedFile, type FileStatus, type FileVersion, type PullRequestRef, type RepoFileSource } from '../repo-files/index.ts';
 import { GuideError } from './errors.ts';
 import { cutHunks, hiddenRuns, linesOn, splitLines, touches, unchangedHunk, wholeFileRows, type Side } from './hunks.ts';
 import { parsePatch, type DiffRow, type Hunk } from './patch.ts';
@@ -59,11 +59,8 @@ export class PullRequestFiles {
 		if (changed.patch === undefined && !pureRename) {
 			throw new GuideError(first.field, `GitHub shows no text diff for ${path}, so a line range cannot point into it.`);
 		}
-		const basePath = changed.previousPath ?? path;
-		const [base, head] = await Promise.all([
-			changed.status === 'added' ? null : this.#text(basePath, this.pull.baseSha),
-			changed.status === 'removed' ? null : this.#text(path, this.pull.headSha),
-		]);
+		const versions = fileVersions(changed, this.pull);
+		const [base, head] = await Promise.all([versions.base && this.#text(versions.base), versions.head && this.#text(versions.head)]);
 		// A deleted file has no lines at the head commit, so its pointers count lines at the base commit.
 		const side: Side = changed.status === 'removed' ? 'base' : 'head';
 		const text = side === 'head' ? head : base;
@@ -82,7 +79,7 @@ export class PullRequestFiles {
 		const visible = cutHunks(hunks, pointers.map((pointer) => pointer.lines), side);
 		return {
 			path,
-			basePath,
+			basePath: versions.base?.path ?? path,
 			status: changed.status,
 			blobSha: changed.blobSha,
 			base,
@@ -92,7 +89,7 @@ export class PullRequestFiles {
 		};
 	}
 
-	#text(path: string, commitSha: string): Promise<string | null> {
+	#text({ path, commitSha }: FileVersion): Promise<string | null> {
 		const key = `${commitSha}:${path}`;
 		let text = this.#texts.get(key);
 		if (!text) {

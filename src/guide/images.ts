@@ -1,4 +1,4 @@
-import type { ChangedFile, FileStatus, PullRequestRef } from '../repo-files/index.ts';
+import { fileVersions, type ChangedFile, type FileStatus, type FileVersion, type PullRequestRef } from '../repo-files/index.ts';
 import { GuideError } from './errors.ts';
 import type { ImagePointer } from './pointer.ts';
 
@@ -23,12 +23,6 @@ export function isImagePath(path: string): boolean {
 	return imageType(path) !== undefined;
 }
 
-/** An image file's path at one commit. */
-export interface ImageVersion {
-	commitSha: string;
-	path: string;
-}
-
 /** An image the page shows. */
 export interface PageImage {
 	src: string;
@@ -41,35 +35,24 @@ export interface ImagePair {
 	after: PageImage | null;
 }
 
-/** The versions of a changed image file at the pull request's base and head commits, where it exists. */
-export function imageVersions(
-	file: ChangedFile,
-	pull: PullRequestRef,
-): { before: ImageVersion | null; after: ImageVersion | null } {
-	return {
-		before: file.status === 'added' ? null : { commitSha: pull.baseSha, path: file.previousPath ?? file.path },
-		after: file.status === 'removed' ? null : { commitSha: pull.headSha, path: file.path },
-	};
-}
-
 /**
  * The build writes each image version under its guide's page, at `images/<commit>/<path>`.
  * This is the part after `images/`, which is the image route's `file` parameter.
  */
-export function imageFileParam(version: ImageVersion): string {
+export function imageFileParam(version: FileVersion): string {
 	return `${version.commitSha}/${version.path}`;
 }
 
 /** The images of a changed image file. `pageUrl` is the guide page's URL, ending in `/`. */
 export function imagePair(file: ChangedFile, pull: PullRequestRef, pageUrl: string): ImagePair {
-	const { before, after } = imageVersions(file, pull);
-	const image = (version: ImageVersion, when: 'before' | 'after'): PageImage => ({
+	const { base, head } = fileVersions(file, pull);
+	const image = (version: FileVersion, when: 'before' | 'after'): PageImage => ({
 		src: `${pageUrl}images/${imageFileParam(version).split('/').map(encodeURIComponent).join('/')}`,
 		alt: `${version.path} ${when} the change`,
 	});
 	return {
-		before: before && image(before, 'before'),
-		after: after && image(after, 'after'),
+		before: base && image(base, 'before'),
+		after: head && image(head, 'after'),
 	};
 }
 

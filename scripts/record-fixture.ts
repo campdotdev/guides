@@ -14,7 +14,7 @@ import { parse } from 'yaml';
 import { pullRequestOf, guideFrontmatter } from '../src/guide/schema.ts';
 import { comparePath, filePath } from '../src/repo-files/fixture.ts';
 import { githubRepoFileSource } from '../src/repo-files/github.ts';
-import { DEFAULT_FIXTURE_DIR, type ChangedFile, type PullRequestRef } from '../src/repo-files/index.ts';
+import { DEFAULT_FIXTURE_DIR, fileVersions, type ChangedFile, type FileVersion, type PullRequestRef } from '../src/repo-files/index.ts';
 
 const guides = process.argv.slice(2);
 if (guides.length === 0) {
@@ -37,14 +37,10 @@ for (const guide of guides) {
 
 	let saved = 0;
 	for (const file of files) {
-		if (file.status !== 'removed') {
-			saved += await save(pull, file, file.path, pull.headSha, file.blobSha);
-		}
-		if (file.status !== 'added') {
-			const basePath = file.previousPath ?? file.path;
-			const expectedBlob = file.status === 'removed' ? file.blobSha : undefined;
-			saved += await save(pull, file, basePath, pull.baseSha, expectedBlob);
-		}
+		const { base, head } = fileVersions(file, pull);
+		// GitHub lists the head blob, or the base blob for a deleted file.
+		if (head) saved += await save(pull, file, head, file.blobSha);
+		if (base) saved += await save(pull, file, base, head ? undefined : file.blobSha);
 	}
 	console.log(`${pull.owner}/${pull.repo}#${pull.pr}: ${files.length} changed files, ${saved} file versions saved to ${outDir}`);
 }
@@ -59,8 +55,7 @@ function readFrontmatter(markdown: string): unknown {
 async function save(
 	pull: PullRequestRef,
 	file: ChangedFile,
-	path: string,
-	commitSha: string,
+	{ path, commitSha }: FileVersion,
 	expectedBlob: string | undefined,
 ): Promise<number> {
 	const bytes = await source.readFile(pull, path, commitSha);
