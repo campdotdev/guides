@@ -3,13 +3,17 @@
  *
  * A click, a key, and a `#step-<n>` anchor all select a step the same way.
  * The URL's anchor always names the selected step.
- * The specs read the fixture guide at tests/fixtures/guides/shaders/264.md, which has two steps.
+ * The specs read the fixture guide at tests/fixtures/guides/shaders/264.md, which has three steps.
  */
 import type { Page } from '@playwright/test';
 import { expect, test } from './test.ts';
 
 const GUIDE = '/guides/shaders/264/';
-const STEPS = ['Step 1: Mount FlutedGlass after a Source', 'Step 2: Shape each flute in one primitive'];
+const STEPS = [
+	'Step 1: Mount FlutedGlass after a Source',
+	'Step 2: Shape each flute in one primitive',
+	'Step 3: Record the default look as a baseline',
+];
 
 /** Asserts that step `n` is the one selected step: its block is expanded, its explanation shows, and the URL names it. */
 async function expectSelected(page: Page, n: number) {
@@ -86,6 +90,10 @@ test('j and k move one step at a time and stop at the first and last step', asyn
 	await page.keyboard.press('j');
 	await expectSelected(page, 2);
 	await page.keyboard.press('j');
+	await expectSelected(page, 3);
+	await page.keyboard.press('j');
+	await expectSelected(page, 3);
+	await page.keyboard.press('k');
 	await expectSelected(page, 2);
 	await page.keyboard.press('k');
 	await expectSelected(page, 1);

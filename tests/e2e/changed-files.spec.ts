@@ -126,7 +126,8 @@ test('an image file in a step has a Reviewed checkbox, and the step counts it', 
 	await reviewed.check();
 	await expect(step.getByText('1 of 2 files reviewed', { exact: true })).toBeAttached();
 
+	// The click wrote #step-3 to the URL, so the reload opens step 3 again.
 	await page.reload();
-	await page.getByRole('button', { name: title }).click();
+	await expect(page.getByRole('button', { name: title })).toHaveAttribute('aria-expanded', 'true');
 	await expect(reviewed).toBeChecked();
 });
