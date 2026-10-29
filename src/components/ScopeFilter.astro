@@ -23,7 +23,8 @@ const { scopes, list } = Astro.props;
 </script>
 
 <style>
-	.scope-filter {
+	/* Leave the form hidden until src/client/scope-filter.ts shows it. */
+	.scope-filter:not([hidden]) {
 		display: flex;
 		align-items: center;
 		gap: 8px;
