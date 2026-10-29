@@ -29,7 +29,8 @@ const { guide } = Astro.props;
 			{guide.steps.map((step) => <StepBlock step={step} />)}
 			<AlsoChanged files={guide.alsoChanged} />
 		</section>
-		<section class="explanation-pane" aria-label="Explanation">
+		{/* Search indexes the prose in this pane. Pagefind skips pages without data-pagefind-body. */}
+		<section class="explanation-pane" aria-label="Explanation" data-pagefind-body>
 			<Overview overview={guide.overview} />
 			{guide.steps.map((step) => <StepExplanation step={step} />)}
 		</section>

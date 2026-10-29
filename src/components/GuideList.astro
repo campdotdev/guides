@@ -1,0 +1,60 @@
+---
+// Lists guides with each one's title, number, and scope. The list's id is `guide-list`.
+// The default slot sits between the heading and the list, for controls such as the scope filter.
+import { guideUrl } from '../guide/catalog.ts';
+import type { GuideFrontmatter } from '../guide/schema.ts';
+
+interface Props {
+	/** The guides in the order to list them. */
+	guides: GuideFrontmatter[];
+}
+const { guides } = Astro.props;
+---
+
+<h2 id="guides">Guides</h2>
+<slot />
+<ol id="guide-list" class="guide-list" aria-labelledby="guides">
+	{
+		guides.map((guide) => (
+			<li data-scope={guide.scope}>
+				<a href={guideUrl(guide)}>{guide.title}</a>
+				<p class="guide-meta">
+					<span>#{guide.pr}</span>
+					{guide.scope && (
+						<span class="guide-scope">
+							<span class="visually-hidden">Scope: </span>
+							{guide.scope}
+						</span>
+					)}
+				</p>
+			</li>
+		))
+	}
+</ol>
+
+<style>
+	.guide-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	li {
+		padding: 12px 0;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.guide-meta {
+		display: flex;
+		gap: 8px;
+		margin: 2px 0 0;
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+
+	.guide-scope {
+		padding: 0 8px;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+	}
+</style>

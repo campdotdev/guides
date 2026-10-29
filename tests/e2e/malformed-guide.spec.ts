@@ -49,6 +49,11 @@ const cases = [
 		dir: 'image-line-range',
 		error: /Invalid guide shaders\/264\.md: steps\.3\.pointers\.2: ".*fluted-glass-default-chromium-linux\.png#L1-L5" points at an image, which takes no line range/,
 	},
+	{
+		guide: 'an inline pointer to lines its step does not show',
+		dir: 'inline-pointer-outside-step',
+		error: /Invalid guide shaders\/264\.md: steps\.2\.inlinePointers\.1: \[exports the primitive\]\(packages\/shaders\/src\/engine\.ts#L70-L80\) points at lines that step 2 does not show\. Step 2 shows lines 67-78 of packages\/shaders\/src\/engine\.ts\./,
+	},
 ];
 
 for (const { guide, dir, error } of cases) {

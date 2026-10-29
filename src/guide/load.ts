@@ -3,6 +3,7 @@ import { repoFileSource, type ChangedFile, type RepoFileSource } from '../repo-f
 import { alsoChanged, type AlsoChangedFile } from './also-changed.ts';
 import { inGuide } from './errors.ts';
 import { stepImages, type StepImage } from './images.ts';
+import { renderStepProse } from './inline-pointers.ts';
 import { OVERVIEW_PARTS, parseGuide, type OverviewKey } from './parse.ts';
 import { renderProse, type Html } from './prose.ts';
 import { PullRequestFiles, type StepFile } from './resolve.ts';
@@ -54,7 +55,7 @@ export async function loadGuide(
 				return {
 					number: step.number,
 					title: step.title,
-					html: renderProse(step.prose, context),
+					html: renderStepProse(step, stepFiles, context),
 					files: stepFiles,
 					images: stepImages(step.images, files.changed, pull, pageUrl),
 					additions: rows.filter((row) => row.kind === 'add').length,

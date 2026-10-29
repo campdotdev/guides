@@ -43,7 +43,7 @@ const SPOKEN = { add: 'added', del: 'removed', context: '' } as const;
 						<td colspan="4">{hunkHeader(hunk)}</td>
 					</tr>
 					{hunk.rows.map((row) => (
-						<tr class={`row row-${row.kind}`}>
+						<tr class={`row row-${row.kind}`} data-head-line={row.newLine}>
 							<td class="line-number">{row.oldLine}</td>
 							<td class="line-number">{row.newLine}</td>
 							<td class="marker">
