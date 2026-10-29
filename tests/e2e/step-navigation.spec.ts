@@ -114,6 +114,15 @@ test('j and k typed into a form field leave the selection alone', async ({ page 
 	await expect(page).toHaveURL(new RegExp(`${GUIDE}$`));
 });
 
+test('j and k still move between steps after the reader checks Reviewed', async ({ page }) => {
+	await page.goto(GUIDE);
+	await page.getByRole('button', { name: STEPS[1] }).click();
+	await page.getByRole('checkbox', { name: 'Reviewed packages/shaders/src/engine.ts', exact: true }).check();
+
+	await page.keyboard.press('j');
+	await expectSelected(page, 3);
+});
+
 test('j and k with a modifier key leave the selection alone', async ({ page }) => {
 	await page.goto(GUIDE);
 
