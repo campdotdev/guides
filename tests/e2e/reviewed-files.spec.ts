@@ -25,8 +25,9 @@ test('a Reviewed mark persists across a reload', async ({ page }) => {
 	await page.getByRole('button', { name: STEP_2 }).click();
 	await reviewed(page, ENGINE).check();
 
+	// The click wrote #step-2 to the URL, so the reload opens step 2 again.
 	await page.reload();
-	await page.getByRole('button', { name: STEP_2 }).click();
+	await expect(page.getByRole('button', { name: STEP_2 })).toHaveAttribute('aria-expanded', 'true');
 
 	await expect(reviewed(page, ENGINE)).toBeChecked();
 	await expect(reviewed(page, FLUTE_SURFACE)).not.toBeChecked();
@@ -77,7 +78,8 @@ test.describe('after the guide is refreshed to a new head', () => {
 		await undeploy();
 		await page.reload();
 		await expect(page.getByRole('banner').getByRole('link', { name: '84cc417' })).toBeVisible();
-		await page.getByRole('button', { name: STEP_2 }).click();
+		// The reload keeps #step-2 in the URL, so step 2 opens again.
+		await expect(page.getByRole('button', { name: STEP_2 })).toHaveAttribute('aria-expanded', 'true');
 
 		await expect(reviewed(page, FLUTE_SURFACE)).not.toBeChecked();
 		await expect(reviewed(page, ENGINE)).toBeChecked();
