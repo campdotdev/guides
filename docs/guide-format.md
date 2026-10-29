@@ -1,6 +1,6 @@
 # Guide file format
 
-A guide file walks through one pull request in steps. It is Markdown with YAML frontmatter, and it holds prose and pointers, never pasted code. The renderer reads the code for each pointer from GitHub at the commits the frontmatter names, so a guide always shows the code that the pull request changed.
+A guide file walks through one pull request in steps. It is Markdown with YAML frontmatter, and it holds prose and pointers, never pasted code. The build reads the code for each pointer from GitHub at the commits the frontmatter names, so a guide always shows the code that the pull request changed.
 
 ## File location
 
@@ -83,7 +83,7 @@ The link target has two parts:
 
 The page shows the diff rows from three lines before the range to three lines after it. The rows come from GitHub's hunks for the file, so they match the pull request's diff on GitHub. [Separators](#separators) hide the file's other lines. Two pointers into one file in the same step share one table, and rows they both show appear once.
 
-Outside a deleted file, a block pointer cannot name deleted lines. To show a deletion, point at the lines around it.
+Outside a deleted file, a block pointer cannot name removed lines. To show removed lines, point at the lines around them.
 
 A block pointer to an image file has no line range. [Image pointers](#image-pointers) describes it.
 
@@ -149,12 +149,12 @@ The engine [exports the primitive](packages/shaders/src/engine.ts#L70-L74) for M
 
 The path and the line range follow the block pointer rules, so the lines are numbered at `headSha`, or at the merge base in a deleted file. In a step's prose, any repository-relative target whose fragment starts with `L` and a digit is an inline pointer, so a malformed range, such as `#L10-20`, fails the build.
 
-Every line in the range must be one that the step's own block pointers show, context lines included. An inline pointer fails the build when it names a line that only another step shows, or a line past a block pointer's context. Outside a deleted file, an inline pointer cannot name removed lines.
+Every line in the range must be one that the step's own block pointers show, including the three lines on each side of a block pointer's range. An inline pointer fails the build when it names a line that only another step shows, or a line more than three lines past a block pointer's range. Outside a deleted file, an inline pointer cannot name removed lines.
 
 On the page, an inline pointer is a phrase with a dotted underline:
 
 - Hovering or focusing the phrase highlights its lines in the step's code.
-- Clicking the phrase opens the step's block if it is closed and scrolls the lines into view. The lines stay highlighted until the phrase loses focus.
+- Clicking the phrase opens the step if it is closed and scrolls the lines into view. The lines stay highlighted until the phrase loses focus.
 - The link's target is the lines on GitHub at `headSha`, or at the merge base in a deleted file. A modified click, such as Cmd-click, opens it.
 
 The overview has no code to highlight, so a link there with a line range renders as a link to the lines on GitHub. To link lines that no step shows, such as unchanged code, use a full GitHub URL.
@@ -169,7 +169,7 @@ A link with no text fails the build unless it is a block pointer alone on its li
 
 ## Also changed
 
-After the last step, the left pane lists every file that the pull request changes and no block pointer names, under the heading "Also changed". The renderer builds the list from the pull request's file list, so a guide cannot leave a file off it. An inline pointer does not take a file off the list.
+After the last step, the left pane lists every file that the pull request changes and no block pointer names, under the heading "Also changed". The build makes the list from the pull request's file list, so a guide cannot leave a file off it. An inline pointer does not take a file off the list.
 
 Each entry shows the file's path, its status, and its added and removed line counts. GitHub counts no lines in a binary file, so a binary file shows "Binary" instead. An image file also shows a thumbnail of the image at `headSha`, or at the merge base for a deleted image.
 
