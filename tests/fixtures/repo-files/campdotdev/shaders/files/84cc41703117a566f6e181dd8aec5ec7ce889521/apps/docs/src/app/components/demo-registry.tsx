@@ -1,0 +1,386 @@
+/**
+ * Maps a component slug to the pieces the shared components/[slug] template
+ * cannot derive from the catalog (content/components.ts): the client demo island and
+ * the Usage content. The template renders usageNotes above the snippet, so
+ * notes read as guidance introducing the code. Paragraphs that merely
+ * restated the catalog description were dropped when pages converted — the
+ * template's header already shows it.
+ */
+import type { ComponentType, ReactNode } from 'react';
+
+import { AuroraIsland } from './aurora/demo';
+import { BlobsIsland } from './blobs/demo';
+import { ConicGradientIsland } from './conic-gradient/demo';
+import { CursorRippleIsland } from './cursor-ripple/demo';
+import { CursorSmudgeIsland } from './cursor-smudge/demo';
+import { CursorSpotlightIsland } from './cursor-spotlight/demo';
+import { DissolveIsland } from './dissolve/demo';
+import { DitherIsland } from './dither/demo';
+import { DotFieldIsland } from './dot-field/demo';
+import { FlutedGlassIsland } from './fluted-glass/demo';
+import { FractalNoiseIsland } from './fractal-noise/demo';
+import { GodRaysIsland } from './god-rays/demo';
+import { GrainIsland } from './grain/demo';
+import { LedWallIsland } from './led-wall/demo';
+import { LinearGradientIsland } from './linear-gradient/demo';
+import { LiquidGradientIsland } from './liquid-gradient/demo';
+import { MeshGradientIsland } from './mesh-gradient/demo';
+import { RadialGradientIsland } from './radial-gradient/demo';
+import { RadialWipeIsland } from './radial-wipe/demo';
+import { SimplexNoiseIsland } from './simplex-noise/demo';
+import { VignetteIsland } from './vignette/demo';
+import { VoronoiIsland } from './voronoi/demo';
+import { WaveLinesIsland } from './wave-lines/demo';
+
+export interface ComponentPageEntry {
+  /** Client island rendering the control store, shader demo, and control panel. */
+  Island: ComponentType;
+  /**
+   * Code snippet for the Usage section, rendered through the shiki CodeBlock.
+   * The import line shown above it is derived from this snippet's JSX tags
+   * (lib/usage-import), so don't write import statements here — every
+   * component tag used in the snippet lands in the import automatically.
+   */
+  usageSnippet: string;
+  /**
+   * Layers the demo scene renders under the component, as JSX, for pages
+   * whose scene composes a background. Copy React (page-actions/) emits them
+   * ahead of the component so the copied snippet reproduces the demo. Absent
+   * when the component fills the scene by itself.
+   */
+  copySiblings?: readonly string[];
+  /**
+   * Optional prose above the snippet. Single-paragraph notes are bare
+   * content; multi-paragraph notes bring their own <p> tags.
+   */
+  usageNotes?: ReactNode;
+}
+
+export const COMPONENT_PAGES: Record<string, ComponentPageEntry> = {
+  aurora: {
+    Island: AuroraIsland,
+    usageSnippet: `<ShaderScene>
+  <Aurora intensity={1} stops={[...]} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        The aurora fills its scene; compose with the container. For a curtain band hanging in a wide
+        dark sky, place a short ShaderScene near the top of a taller dark section.{' '}
+        <code>coverage</code> reveals the curtain from the bottom up — 1 covers the canvas, 0 hides
+        it.
+      </>
+    ),
+  },
+  blobs: {
+    Island: BlobsIsland,
+    copySiblings: [
+      "<LinearGradient angle={90} speed={0} stops={[{ color: 'oklch(0.18 0.02 265)' }, { color: 'oklch(0.26 0.04 300)' }]} />",
+    ],
+    usageSnippet: `<ShaderScene>
+  <LinearGradient />
+  <Blobs />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        The space between blobs is transparent — stack Blobs over a gradient or any other layer and
+        it shows through.
+      </>
+    ),
+  },
+  'conic-gradient': {
+    Island: ConicGradientIsland,
+    usageSnippet: `<ShaderScene>
+  <ConicGradient />
+</ShaderScene>`,
+  },
+  'cursor-ripple': {
+    Island: CursorRippleIsland,
+    copySiblings: ['<MeshGradient />'],
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+  <CursorRipple />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        Cursor Ripple is a cursor effect: stack it after any components inside a{' '}
+        <code>&lt;ShaderScene&gt;</code> and dragging the pointer across the canvas leaves a wake
+        that spreads and settles. Its refraction bends the image the Sources beneath it drew, and
+        not the output of an Effect mounted before it. Mode 1 only: it needs the scene&apos;s output
+        stage.
+      </>
+    ),
+  },
+  'cursor-smudge': {
+    Island: CursorSmudgeIsland,
+    copySiblings: ['<LiquidGradient speed={0} />'],
+    usageSnippet: `<ShaderScene scrollPush>
+  <LiquidGradient speed={0} />
+  <CursorSmudge strength={0.12} radius={0.18} decay={0.4} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        <p>
+          Move the pointer over the canvas without pressing. Higher <code>decay</code> values
+          recover faster. A still pointer adds no distortion, and the scene can idle after recovery
+          when its other components are still. Set <code>strength</code> to 0 to disable the effect.
+        </p>
+        <p>
+          Set <code>decay</code> to 0 to keep the distortion after the pointer stops. New strokes
+          keep changing it. Raise decay to resume recovery, or set strength to 0 to clear it.
+          Resizing or remounting the scene also clears the distortion. An animated Source keeps
+          moving beneath the held distortion.
+        </p>
+        <p>
+          Place Cursor Smudge after a Source inside <code>&lt;ShaderScene&gt;</code>. It bends the
+          image drawn by Sources; other Effects keep their own contributions unbent. Sampling past
+          the image extends its edge pixels. Cursor Smudge requires Mode 1.
+        </p>
+        <p>
+          Enable <code>scrollPush</code> on the scene to smudge while a finger scrolls across it,
+          including the fling after release. The page keeps scrolling. Reduced motion slows recovery
+          to 0.3× speed; the explicit <code>paused</code> motion policy clears the effect. An
+          ordinary scene pause preserves the smudge until the scene resumes.
+        </p>
+      </>
+    ),
+  },
+  'cursor-spotlight': {
+    Island: CursorSpotlightIsland,
+    copySiblings: ['<RadialGradient />'],
+    usageSnippet: `<ShaderScene>
+  <RadialGradient />
+  <CursorSpotlight />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        Cursor Spotlight is a cursor effect: stack it after any components inside a{' '}
+        <code>&lt;ShaderScene&gt;</code> and the area around the pointer brightens over whatever
+        they drew. It stays invisible until the pointer first moves over the canvas, fades out when
+        the pointer leaves, and lets the scene idle while the pointer is still. Mode 1 only: it
+        needs the scene&apos;s output stage.
+      </>
+    ),
+  },
+  dissolve: {
+    Island: DissolveIsland,
+    copySiblings: ['<MeshGradient />'],
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+  <Dissolve progress={0.5} pixelSize={4} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        <p>
+          Dissolve is a post-process layer: stack it after any components inside a{' '}
+          <code>&lt;ShaderScene&gt;</code> and drive <code>progress</code> from 0 to 1 to show them
+          block by block. Hidden blocks are transparent, so the page shows through.
+        </p>
+        <p>
+          It reads the alpha beneath it. Stacked after a feathered Radial Wipe, at{' '}
+          <code>progress</code> 1, it turns the wipe&apos;s soft edge into a ragged one, with the
+          wipe&apos;s <code>feather</code> setting how wide the ragged band is and{' '}
+          <code>pixelSize</code> its grain. A soft-edged source such as Blobs gets the same
+          treatment, which is the point of stacking a Dissolve over it.
+        </p>
+      </>
+    ),
+  },
+  dither: {
+    Island: DitherIsland,
+    copySiblings: ['<MeshGradient />'],
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+  <Dither pattern="bayer-8x8" pixelSize={4} levels={4} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        <p>
+          Dither is a post-process layer: stack it after any components inside a{' '}
+          <code>&lt;ShaderScene&gt;</code> and it pixelates the composed scene into chunky cells,
+          posterizing each channel to a few levels — the scene keeps its own colors.
+        </p>
+        <p>
+          <code>pattern</code> picks the threshold map that decides how in-between colors resolve:
+          the Bayer matrices trade smoothness (8x8) for crunch (2x2). <code>pixelSize</code> sets
+          the cell size in CSS pixels, and <code>levels</code> is how many steps each color channel
+          is allowed — <code>2</code> is the harshest look, <code>6</code> and up reads as subtle
+          banding. <code>spread</code> dials the pattern&apos;s strength from clean posterize bands
+          (<code>0</code>) to gritty overshoot (<code>2</code>), and <code>threshold</code> gates
+          the effect by brightness — slide it down to release the highlights until the effect is
+          gone.
+        </p>
+      </>
+    ),
+  },
+  'dot-field': {
+    Island: DotFieldIsland,
+    usageSnippet: `<ShaderScene>
+  <DotField spacing={30} dotSize={3} color="oklch(0.65 0.01 150)" speed={0.45} amplitude={0.15} />
+</ShaderScene>`,
+  },
+  'fluted-glass': {
+    Island: FlutedGlassIsland,
+    copySiblings: ['<MeshGradient />'],
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+  <FlutedGlass />
+  <Grain />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        FlutedGlass bends only what Sources drew, never the output of an Effect such as Grain, so
+        mount Grain after the glass, where the order you write matches what you see. Mode 1 only: it
+        needs the scene&apos;s output stage. In your own r3f <code>&lt;Canvas&gt;</code>, the{' '}
+        <code>fluteSurface</code> primitive gives you the same flute math.
+      </>
+    ),
+  },
+  'fractal-noise': {
+    Island: FractalNoiseIsland,
+    usageSnippet: `<ShaderScene>
+  <FractalNoise />
+</ShaderScene>`,
+  },
+  'god-rays': {
+    Island: GodRaysIsland,
+    usageSnippet: `<ShaderScene>
+  <GodRays center={[0.5, -0.05]} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        Light rays radiate from <code>center</code> — park it off-canvas for a top-of-page sun. The
+        rays emit over a transparent background; stack them above a dark layer.
+      </>
+    ),
+  },
+  grain: {
+    Island: GrainIsland,
+    copySiblings: ['<LinearGradient />'],
+    usageSnippet: `<ShaderScene>
+  <LinearGradient />
+  <Grain intensity={0.45} speed={1} blend="additive" />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        <p>
+          Grain stacks inside any <code>&lt;ShaderScene&gt;</code> on top of whatever base component
+          you want — gradients, noise fields, mesh gradients — and applies a layer of animated grain
+          via the post-processing pipeline.
+        </p>
+        <p>
+          <strong>Additive</strong> (default) adds signed grain so half the pixels brighten and half
+          darken, preserving average exposure — pure texture, no exposure shift.{' '}
+          <strong>Subtractive</strong> takes the absolute value of the grain and subtracts it, so
+          the image only darkens. Subtractive simulates silver-halide film stock physics, where
+          exposed grain blocks light.
+        </p>
+        <p>
+          <code>speed</code> controls the shutter cadence: <code>1</code> ≈ 60Hz (continuous shimmer
+          at 60fps), <code>0.4</code> ≈ 24Hz (chunky film cadence), <code>0</code> freezes the grain
+          pattern.
+        </p>
+      </>
+    ),
+  },
+  'led-wall': {
+    Island: LedWallIsland,
+    copySiblings: ['<MeshGradient />'],
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+  <LedWall spacing={8} dotSize={4} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        LED Wall is a post-process layer: stack it after any components inside a{' '}
+        <code>&lt;ShaderScene&gt;</code> and it screens the composed scene into a grid of square
+        dots, each lit with the scene color at its cell. The gaps are transparent unless{' '}
+        <code>bleed</code> lets the scene through.
+      </>
+    ),
+  },
+  'linear-gradient': {
+    Island: LinearGradientIsland,
+    usageSnippet: `<ShaderScene>
+  <LinearGradient />
+</ShaderScene>`,
+  },
+  'liquid-gradient': {
+    Island: LiquidGradientIsland,
+    usageSnippet: `<ShaderScene>
+  <LiquidGradient />
+</ShaderScene>`,
+  },
+  'mesh-gradient': {
+    Island: MeshGradientIsland,
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+</ShaderScene>`,
+  },
+  'radial-gradient': {
+    Island: RadialGradientIsland,
+    usageSnippet: `<ShaderScene>
+  <RadialGradient />
+</ShaderScene>`,
+  },
+  'radial-wipe': {
+    Island: RadialWipeIsland,
+    copySiblings: ['<MeshGradient />'],
+    usageSnippet: `<ShaderScene>
+  <MeshGradient />
+  <RadialWipe progress={0.5} center={[0.5, 1]} feather={0.15} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        Radial Wipe is a post-process layer: stack it after any components inside a{' '}
+        <code>&lt;ShaderScene&gt;</code> and drive <code>progress</code> from 0 to 1 to reveal them
+        from <code>center</code>. <code>feather</code> softens the front. Hidden areas are
+        transparent, so the page shows through. Stack a Dissolve after it to grain the soft edge.
+      </>
+    ),
+  },
+  'simplex-noise': {
+    Island: SimplexNoiseIsland,
+    usageSnippet: `<ShaderScene>
+  <SimplexNoise />
+</ShaderScene>`,
+  },
+  vignette: {
+    Island: VignetteIsland,
+    copySiblings: ['<LinearGradient />'],
+    usageSnippet: `<ShaderScene>
+  <LinearGradient />
+  <Vignette intensity={0.5} radius={0.6} feather={0.5} />
+</ShaderScene>`,
+    usageNotes: (
+      <>
+        <p>
+          Vignette stacks inside any <code>&lt;ShaderScene&gt;</code> on top of whatever base
+          component you want and fades the upstream pixels toward an edge color along a soft radial
+          ring. Unlike <code>&lt;Grain /&gt;</code>, which generates new noise from <code>uv</code>,
+          Vignette reads the upstream pixel and mixes it toward <code>color</code> — the{' '}
+          {`"read-upstream"`} half of the post-processing pipeline.
+        </p>
+        <p>
+          <code>feather</code> controls how gradual the blend is. At <code>0</code> the ring is a
+          hard cutoff; at <code>1</code> the entire canvas is in the blend (a smooth radial gradient
+          from center to edge). <code>radius</code> is the outer edge of the ring;{' '}
+          <code>center</code> is the bright spot in normalized UV space.
+        </p>
+      </>
+    ),
+  },
+  voronoi: {
+    Island: VoronoiIsland,
+    usageSnippet: `<ShaderScene>
+  <Voronoi />
+</ShaderScene>`,
+  },
+  'wave-lines': {
+    Island: WaveLinesIsland,
+    // The legacy page showed a live snippet mirroring the control panel; see
+    // the note in wave-lines/demo.tsx for why it is static here for now.
+    usageSnippet: `<ShaderScene>
+  <WaveLines />
+</ShaderScene>`,
+  },
+};
